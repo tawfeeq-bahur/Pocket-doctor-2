@@ -24,7 +24,6 @@ import type { Medication } from "@/lib/types";
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
-  { href: "/reminders", label: "Reminders", icon: Bell },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },

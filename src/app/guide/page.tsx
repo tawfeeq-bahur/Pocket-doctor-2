@@ -16,7 +16,7 @@ import { LifeBuoy, ThumbsUp, ThumbsDown, Clock, AlertTriangle, PlusCircle } from
 import { cn } from '@/lib/utils';
 import { AddMedicationDialog } from '@/components/medication/AddMedicationDialog';
 import { useSharedState } from '@/components/AppLayout';
-
+import { MedicationList } from '@/components/medication/MedicationList';
 
 const formSchema = z.object({
   medicationName: z.string().min(2, { message: 'Medication name must be at least 2 characters.' }),
@@ -26,7 +26,7 @@ export default function GuidePage() {
   const [guide, setGuide] = useState<MedicationGuideOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { addMedication } = useSharedState();
+  const { medications, addMedication, updateDoseStatus, deleteMedication } = useSharedState();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,6 +78,14 @@ export default function GuidePage() {
                     </FormItem>
                   )}
                 />
+                 <AddMedicationDialog 
+                    onAddMedication={addMedication}
+                  >
+                   <Button type="button" variant="outline">
+                      <PlusCircle className="mr-2 h-4 w-4" />
+                      Add Manually
+                    </Button>
+                  </AddMedicationDialog>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? 'Searching...' : 'Get Guide'}
                 </Button>
@@ -88,6 +96,7 @@ export default function GuidePage() {
 
         {isLoading && <GuideSkeleton />}
         {error && <Alert variant="destructive"><AlertTriangle className="h-4 w-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+        
         {guide && (
           <Card className="mt-6">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -126,6 +135,20 @@ export default function GuidePage() {
             </CardContent>
           </Card>
         )}
+
+        <div className="mt-8">
+            <h2 className="text-2xl font-bold tracking-tight font-headline">
+              My Medication Schedule
+            </h2>
+            <div className="mt-4">
+               <MedicationList 
+                  medications={medications} 
+                  onUpdateDose={updateDoseStatus} 
+                  onDeleteMedication={deleteMedication} 
+                />
+            </div>
+        </div>
+
       </div>
   );
 }
