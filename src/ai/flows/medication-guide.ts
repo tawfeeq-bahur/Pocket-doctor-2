@@ -66,6 +66,10 @@ const medicationGuideFlow = ai.defineFlow(
     if (!output) {
       throw new Error('Failed to get medication guide from the AI model.');
     }
-    return output;
+    const validatedOutput = MedicationGuideOutputSchema.safeParse(output);
+    if (!validatedOutput.success) {
+      throw new Error('AI model returned invalid data format.');
+    }
+    return validatedOutput.data;
   }
 );
