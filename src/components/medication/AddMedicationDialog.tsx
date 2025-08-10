@@ -1,7 +1,8 @@
+
 "use client";
 
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,13 +26,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { Medication } from "@/lib/types";
-import { PlusCircle, Trash2 } from "lucide-react";
+import { add, format } from 'date-fns';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   dosage: z.string().min(1, { message: "Dosage is required." }),
   frequency: z.string().min(1, { message: "Frequency is required." }),
-  timings: z.array(z.object({ value: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)") })).min(1, "At least one timing is required."),
+  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
+  interval: z.coerce.number().min(1, { message: "Interval must be at least 1 hour." }),
+}).refine(data => data.startTime < data.endTime, {
+  message: "End time must be after start time.",
+  path: ["endTime"],
 });
 
 type AddMedicationDialogProps = {
@@ -47,22 +54,33 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
       name: "",
       dosage: "",
       frequency: "",
-      timings: [{ value: "" }],
+      startTime: "08:00",
+      endTime: "20:00",
+      interval: 12,
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "timings",
-  });
-
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const timingsArray = values.timings.map(t => t.value);
+    const { startTime, endTime, interval } = values;
+    
+    const timings: string[] = [];
+    const today = new Date();
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    let currentTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), startHour, startMinute);
+
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    const finalTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMinute);
+
+    while (currentTime <= finalTime) {
+        timings.push(format(currentTime, 'HH:mm'));
+        currentTime = add(currentTime, { hours: interval });
+    }
+
     onAddMedication({ 
         name: values.name, 
         dosage: values.dosage,
         frequency: values.frequency,
-        timings: timingsArray 
+        timings: timings
     });
     form.reset();
     setIsOpen(false);
@@ -119,41 +137,55 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
                 </FormItem>
               )}
             />
-             <div>
-                <FormLabel>Timings</FormLabel>
-                <div className="space-y-2 mt-2">
-                {fields.map((field, index) => (
+             
+            <div className="space-y-2">
+                <FormLabel>Schedule</FormLabel>
+                <div className="grid grid-cols-2 gap-4">
+                     <FormField
+                        control={form.control}
+                        name="startTime"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs">Start Time</FormLabel>
+                                <FormControl>
+                                    <Input type="time" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                     <FormField
-                    key={field.id}
-                    control={form.control}
-                    name={`timings.${index}.value`}
-                    render={({ field }) => (
-                        <FormItem>
-                        <div className="flex items-center gap-2">
-                             <FormControl>
-                                <Input type="time" {...field} />
-                            </FormControl>
-                            <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => remove(index)} disabled={fields.length <= 1}>
-                                <Trash2 className="h-4 w-4"/>
-                            </Button>
-                        </div>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                    />
-                ))}
+                        control={form.control}
+                        name="endTime"
+                        render={({ field }) => (
+                            <FormItem>
+                                 <FormLabel className="text-xs">End Time</FormLabel>
+                                <FormControl>
+                                    <Input type="time" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
                 </div>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => append({ value: "" })}
-                >
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add Timing
-                </Button>
             </div>
+             <FormField
+                control={form.control}
+                name="interval"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Interval between doses (in hours)</FormLabel>
+                        <FormControl>
+                            <Input type="number" placeholder="e.g., 8" {...field} />
+                        </FormControl>
+                         <FormDescription>
+                           The time in hours between each dose.
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+                />
+
             <DialogFooter>
               <Button type="submit">Save Medication</Button>
             </DialogFooter>
@@ -163,3 +195,4 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
     </Dialog>
   );
 }
+
