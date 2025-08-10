@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, Snooze, Trash2, Clock } from 'lucide-react';
+import { Bell, BellOff, Trash2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import type { Reminder } from '@/lib/types';
@@ -69,7 +69,7 @@ export default function RemindersPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button variant="outline" size="sm" onClick={() => handleSnooze(reminder.id)}>
-                        <Snooze className="mr-2 h-4 w-4" />
+                        <BellOff className="mr-2 h-4 w-4" />
                         Snooze
                       </Button>
                       <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => handleDelete(reminder.id)}>
