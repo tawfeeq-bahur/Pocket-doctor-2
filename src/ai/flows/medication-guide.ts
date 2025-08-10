@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Provides detailed information about a specific medication.
@@ -68,7 +67,7 @@ const medicationGuideFlow = ai.defineFlow(
     }
     const validatedOutput = MedicationGuideOutputSchema.safeParse(output);
     if (!validatedOutput.success) {
-      throw new Error('AI model returned invalid data format.');
+      throw new Error(`AI model returned invalid data format. Errors: ${JSON.stringify(validatedOutput.error.issues)}`);
     }
     return validatedOutput.data;
   }

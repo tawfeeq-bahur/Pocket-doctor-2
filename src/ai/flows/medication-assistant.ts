@@ -1,4 +1,3 @@
-// medication-assistant.ts
 'use server';
 /**
  * @fileOverview AI-powered chatbot for medication queries and personalized advice.
@@ -61,7 +60,7 @@ const medicationAssistantFlow = ai.defineFlow(
     }
     const validatedOutput = MedicationAssistantOutputSchema.safeParse(output);
     if (!validatedOutput.success) {
-      throw new Error('AI model returned invalid data format for the assistant.');
+      throw new Error(`AI model returned invalid data format for the assistant. Errors: ${JSON.stringify(validatedOutput.error.issues)}`);
     }
     return validatedOutput.data;
   }
