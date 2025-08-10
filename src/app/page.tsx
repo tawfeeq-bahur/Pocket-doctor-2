@@ -7,6 +7,8 @@ import { AddMedicationDialog } from "@/components/medication/AddMedicationDialog
 import { MedicationList } from "@/components/medication/MedicationList";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { MedicationSummary } from "@/components/medication/MedicationSummary";
+import { Separator } from "@/components/ui/separator";
 
 const initialMedications: Medication[] = [
   {
@@ -26,7 +28,7 @@ const initialMedications: Medication[] = [
     dosage: "10mg",
     frequency: "Once a day",
     timings: ["09:00"],
-    doses: [{ scheduled: "09:00", status: "pending" }],
+    doses: [{ scheduled: "09:00", status: "taken" }],
   },
   {
     id: "3",
@@ -34,7 +36,7 @@ const initialMedications: Medication[] = [
     dosage: "20mg",
     frequency: "Once a day",
     timings: ["21:00"],
-    doses: [{ scheduled: "21:00", status: "pending" }],
+    doses: [{ scheduled: "21:00", status: "skipped" }],
   },
 ];
 
@@ -84,6 +86,11 @@ export default function DashboardPage() {
             </AddMedicationDialog>
           </div>
         </div>
+        <MedicationSummary medications={medications} />
+        <Separator className="my-4" />
+        <h2 className="text-2xl font-bold tracking-tight font-headline">
+          My Medications
+        </h2>
         <MedicationList medications={medications} onUpdateDose={updateDoseStatus} onDeleteMedication={deleteMedication} />
       </div>
     </AppLayout>

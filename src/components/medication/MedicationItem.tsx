@@ -12,6 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 type MedicationItemProps = {
   medication: Medication;
@@ -39,6 +40,18 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
     });
   }
 
+  const getStatusBadge = (status: 'pending' | 'taken' | 'skipped') => {
+    switch (status) {
+      case 'taken':
+        return <Badge variant="secondary" className="bg-green-100 text-green-800">Taken</Badge>;
+      case 'skipped':
+        return <Badge variant="destructive">Skipped</Badge>;
+      case 'pending':
+      default:
+        return <Badge variant="outline">Pending</Badge>;
+    }
+  }
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="flex flex-row items-start justify-between">
@@ -61,16 +74,13 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
           </DropdownMenu>
       </CardHeader>
       <CardContent className="flex-grow">
-        <Separator className="my-2" />
-        <div className="space-y-2">
-            <h4 className="text-sm font-medium">Schedule</h4>
+        <div className="space-y-3">
+            <h4 className="text-sm font-medium">Today's Schedule</h4>
             {medication.doses.map(dose => (
-              <div key={dose.scheduled} className="flex justify-between items-center text-sm">
+              <div key={dose.scheduled} className="flex justify-between items-center text-sm p-2 rounded-md bg-muted/50">
                 <div className="flex items-center gap-2">
-                   {dose.status === 'pending' && <Bell className="w-4 h-4 text-accent" />}
-                   {dose.status === 'taken' && <CheckCircle className="w-4 h-4 text-green-500" />}
-                   {dose.status === 'skipped' && <XCircle className="w-4 h-4 text-destructive" />}
-                  <span>{dose.scheduled}</span>
+                  <span className='font-mono'>{dose.scheduled}</span>
+                   {getStatusBadge(dose.status)}
                 </div>
                 <div className="flex gap-2">
                     <Button 
@@ -78,12 +88,14 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
                         variant="outline" 
                         onClick={() => handleDoseAction(dose.scheduled, 'taken')}
                         disabled={dose.status !== 'pending'}
+                        className="h-7"
                     >Take</Button>
                     <Button 
                         size="sm" 
                         variant="ghost" 
                         onClick={() => handleDoseAction(dose.scheduled, 'skipped')}
                         disabled={dose.status !== 'pending'}
+                        className="h-7"
                     >Skip</Button>
                 </div>
               </div>
