@@ -42,7 +42,9 @@ const prompt = ai.definePrompt({
 
   Medical query: {{query}}
 
-  Provide a helpful and accurate medical information response, but always include the following disclaimer: This is not a substitute for advice from qualified healthcare professionals. Always recommend consulting healthcare professionals for serious concerns.
+  Provide a helpful and accurate medical information response.
+  
+  IMPORTANT: You must always include the following disclaimer text exactly as it is written here in the 'disclaimer' field of your response: "This is not a substitute for advice from qualified healthcare professionals. Always recommend consulting healthcare professionals for serious concerns."
   `,
 });
 
@@ -54,9 +56,13 @@ const medicationAssistantFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    return {
-      response: output!.response,
-      disclaimer: 'This is not a substitute for advice from qualified healthcare professionals.',
-    };
+    if (!output) {
+      throw new Error('Failed to get a response from the AI model.');
+    }
+    const validatedOutput = MedicationAssistantOutputSchema.safeParse(output);
+    if (!validatedOutput.success) {
+      throw new Error('AI model returned invalid data format for the assistant.');
+    }
+    return validatedOutput.data;
   }
 );
