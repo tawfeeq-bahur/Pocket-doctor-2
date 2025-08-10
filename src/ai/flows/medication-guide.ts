@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Provides detailed information about a specific medication.
@@ -17,6 +18,8 @@ export type MedicationGuideInput = z.infer<typeof MedicationGuideInputSchema>;
 
 const MedicationGuideOutputSchema = z.object({
   medicationName: z.string(),
+  suggestedDosage: z.string().describe("A common or suggested dosage for the medication, e.g., '10mg' or '500mg'."),
+  suggestedFrequency: z.string().describe("A common or suggested frequency for taking the medication, e.g., 'Once a day' or 'Twice a day'."),
   timing: z.string().describe('Recommended timing, e.g., "Morning or Evening".'),
   food: z.string().describe('Recommendation regarding food, e.g., "With or without food".'),
   advantages: z.array(z.string()).describe('List of key advantages or uses of the medication.'),
@@ -38,6 +41,8 @@ const prompt = ai.definePrompt({
   prompt: `
     You are a trusted medical information provider.
     For the medication "{{medicationName}}", provide a concise guide covering the following points:
+    - Suggested Dosage: What is a common dosage for this medication?
+    - Suggested Frequency: How often is this medication typically taken?
     - Timing: When is it best to take it? (e.g., Morning, Evening, with meals)
     - Food: Should it be taken with or without food?
     - Advantages: What are its primary benefits? List a few key points.

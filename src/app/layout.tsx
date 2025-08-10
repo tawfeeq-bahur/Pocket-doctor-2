@@ -1,7 +1,9 @@
+
 import type {Metadata} from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
+import { AppLayout, SharedStateProvider } from '@/components/AppLayout';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,7 +23,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
-        {children}
+        <SharedStateProvider>
+          <AppLayout>
+            {children}
+          </AppLayout>
+        </SharedStateProvider>
         <Toaster />
       </body>
     </html>

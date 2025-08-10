@@ -4,6 +4,8 @@ import type { Medication } from "@/lib/types";
 import { MedicationItem } from "./MedicationItem";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Pill } from "lucide-react";
+import Link from 'next/link';
+import { Button } from "../ui/button";
 
 type MedicationListProps = {
   medications: Medication[];
@@ -16,11 +18,14 @@ export function MedicationList({ medications, onUpdateDose, onDeleteMedication }
     return (
        <Card>
         <CardHeader>
-          <CardTitle>No Medications</CardTitle>
+          <CardTitle>No Medications Added</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-60">
             <Pill className="w-16 h-16 text-muted-foreground" />
-            <p className="text-muted-foreground">You haven't added any medications yet. <br/> Click "Add Medication" to get started.</p>
+            <p className="text-muted-foreground">You haven't added any medications yet.</p>
+            <Button asChild>
+              <Link href="/guide">Go to Medication Guide to add one</Link>
+            </Button>
         </CardContent>
       </Card>
     )

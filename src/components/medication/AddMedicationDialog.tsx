@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -35,30 +35,52 @@ const formSchema = z.object({
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   interval: z.coerce.number().min(1, { message: "Interval must be at least 1 hour." }),
-}).refine(data => data.startTime < data.endTime, {
-  message: "End time must be after start time.",
+}).refine(data => {
+    if (!data.startTime || !data.endTime) return true;
+    return data.startTime <= data.endTime;
+}, {
+  message: "End time must be after or same as start time.",
   path: ["endTime"],
 });
 
 type AddMedicationDialogProps = {
   children: React.ReactNode;
   onAddMedication: (medication: Omit<Medication, "id" | "doses">) => void;
+  initialData?: {
+    name: string;
+    dosage: string;
+    frequency: string;
+  }
 };
 
-export function AddMedicationDialog({ children, onAddMedication }: AddMedicationDialogProps) {
+export function AddMedicationDialog({ children, onAddMedication, initialData }: AddMedicationDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      dosage: "",
-      frequency: "",
+      name: initialData?.name || "",
+      dosage: initialData?.dosage || "",
+      frequency: initialData?.frequency || "",
       startTime: "08:00",
       endTime: "20:00",
       interval: 12,
     },
   });
+
+  useEffect(() => {
+    if (initialData) {
+      form.reset({
+        name: initialData.name,
+        dosage: initialData.dosage,
+        frequency: initialData.frequency,
+        startTime: "08:00",
+        endTime: "20:00",
+        interval: 12,
+      });
+    }
+  }, [initialData, form, isOpen]);
+
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const { startTime, endTime, interval } = values;
@@ -71,16 +93,19 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
     const [endHour, endMinute] = endTime.split(':').map(Number);
     const finalTime = new Date(today.getFullYear(), today.getMonth(), today.getDate(), endHour, endMinute);
 
-    while (currentTime <= finalTime) {
-        timings.push(format(currentTime, 'HH:mm'));
-        currentTime = add(currentTime, { hours: interval });
+    if (currentTime <= finalTime) {
+      while (currentTime <= finalTime) {
+          timings.push(format(currentTime, 'HH:mm'));
+          if (interval <= 0) break; 
+          currentTime = add(currentTime, { hours: interval });
+      }
     }
 
     onAddMedication({ 
         name: values.name, 
         dosage: values.dosage,
         frequency: values.frequency,
-        timings: timings
+        timings: timings.length > 0 ? timings : [startTime]
     });
     form.reset();
     setIsOpen(false);
@@ -93,7 +118,7 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
         <DialogHeader>
           <DialogTitle>Add New Medication</DialogTitle>
           <DialogDescription>
-            Enter the details of your new medication here. Click save when you're done.
+            Confirm or edit the details for your new medication below.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -140,7 +165,10 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
              
             <div className="space-y-2">
                 <FormLabel>Schedule</FormLabel>
-                <div className="grid grid-cols-2 gap-4">
+                <FormDescription>
+                    Set the start time, end time, and interval for your doses.
+                </FormDescription>
+                <div className="grid grid-cols-2 gap-4 pt-2">
                      <FormField
                         control={form.control}
                         name="startTime"
@@ -178,9 +206,6 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
                         <FormControl>
                             <Input type="number" placeholder="e.g., 8" {...field} />
                         </FormControl>
-                         <FormDescription>
-                           The time in hours between each dose.
-                        </FormDescription>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -195,4 +220,3 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
     </Dialog>
   );
 }
-
