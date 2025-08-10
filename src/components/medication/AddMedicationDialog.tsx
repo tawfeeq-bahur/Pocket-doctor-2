@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -24,12 +24,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { Medication } from "@/lib/types";
+import { PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   dosage: z.string().min(1, { message: "Dosage is required." }),
   frequency: z.string().min(1, { message: "Frequency is required." }),
-  timings: z.string().min(1, { message: "At least one timing is required." }),
+  timings: z.array(z.object({ value: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)") })).min(1, "At least one timing is required."),
 });
 
 type AddMedicationDialogProps = {
@@ -46,13 +47,23 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
       name: "",
       dosage: "",
       frequency: "",
-      timings: "",
+      timings: [{ value: "" }],
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "timings",
+  });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    const timingsArray = values.timings.split(",").map(t => t.trim());
-    onAddMedication({ ...values, timings: timingsArray });
+    const timingsArray = values.timings.map(t => t.value);
+    onAddMedication({ 
+        name: values.name, 
+        dosage: values.dosage,
+        frequency: values.frequency,
+        timings: timingsArray 
+    });
     form.reset();
     setIsOpen(false);
   }
@@ -108,19 +119,41 @@ export function AddMedicationDialog({ children, onAddMedication }: AddMedication
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="timings"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Timings</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 08:00, 20:00" {...field} />
-                  </FormControl>
-                   <FormMessage />
-                </FormItem>
-              )}
-            />
+             <div>
+                <FormLabel>Timings</FormLabel>
+                <div className="space-y-2 mt-2">
+                {fields.map((field, index) => (
+                    <FormField
+                    key={field.id}
+                    control={form.control}
+                    name={`timings.${index}.value`}
+                    render={({ field }) => (
+                        <FormItem>
+                        <div className="flex items-center gap-2">
+                             <FormControl>
+                                <Input type="time" {...field} />
+                            </FormControl>
+                            <Button type="button" variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => remove(index)} disabled={fields.length <= 1}>
+                                <Trash2 className="h-4 w-4"/>
+                            </Button>
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                ))}
+                </div>
+                <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() => append({ value: "" })}
+                >
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Add Timing
+                </Button>
+            </div>
             <DialogFooter>
               <Button type="submit">Save Medication</Button>
             </DialogFooter>
