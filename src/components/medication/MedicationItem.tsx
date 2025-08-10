@@ -1,10 +1,9 @@
 "use client";
 
-import { Bell, CheckCircle, MoreVertical, SkipForward, Trash2, XCircle } from "lucide-react";
+import { MoreVertical, Trash2 } from "lucide-react";
 import type { Medication } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -43,7 +42,7 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
   const getStatusBadge = (status: 'pending' | 'taken' | 'skipped') => {
     switch (status) {
       case 'taken':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800">Taken</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 border-green-200 dark:border-green-700">Taken</Badge>;
       case 'skipped':
         return <Badge variant="destructive">Skipped</Badge>;
       case 'pending':
@@ -66,7 +65,7 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={handleDelete} className="text-destructive">
+              <DropdownMenuItem onClick={handleDelete} className="text-destructive focus:text-destructive focus:bg-destructive/10">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>

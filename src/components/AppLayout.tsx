@@ -36,11 +36,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <Sidebar>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full bg-primary text-primary-foreground">
+              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
                 <Pill className="h-4 w-4" />
               </Button>
               <div className="flex flex-col">
-                <span className="font-semibold font-headline">PillPal</span>
+                <span className="font-semibold font-headline">Pocket Doctor</span>
               </div>
             </div>
           </SidebarHeader>
@@ -73,7 +73,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               </Avatar>
               <div className="flex flex-col">
                 <span className="text-sm font-medium">User</span>
-                <span className="text-xs text-muted-foreground">user@pillpal.com</span>
+                <span className="text-xs text-muted-foreground">user@pocketdoc.com</span>
               </div>
             </div>
           </SidebarFooter>
@@ -81,7 +81,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <div className="flex flex-col w-full">
             <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 md:hidden">
               <SidebarTrigger />
-              <h1 className="text-lg font-semibold font-headline">PillPal</h1>
+              <h1 className="text-lg font-semibold font-headline">Pocket Doctor</h1>
             </header>
             <SidebarInset>{children}</SidebarInset>
         </div>

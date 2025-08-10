@@ -30,15 +30,15 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
   }, [medications]);
 
   const chartData = [
-    { name: 'Taken', value: summary.taken, fill: 'hsl(var(--chart-2))' },
+    { name: 'Taken', value: summary.taken, fill: 'hsl(142.1 76.2% 36.3%)' }, // green-600
     { name: 'Skipped', value: summary.skipped, fill: 'hsl(var(--destructive))' },
-    { name: 'Pending', value: summary.pending, fill: 'hsl(var(--chart-1))' },
+    { name: 'Pending', value: summary.pending, fill: 'hsl(221.2 83.2% 53.3%)' }, // blue-600
   ].filter(d => d.value > 0);
 
   const chartConfig = {
-    taken: { label: "Taken", color: "hsl(var(--chart-2))" },
+    taken: { label: "Taken", color: "hsl(142.1 76.2% 36.3%)" },
     skipped: { label: "Skipped", color: "hsl(var(--destructive))" },
-    pending: { label: "Pending", color: "hsl(var(--chart-1))" },
+    pending: { label: "Pending", color: "hsl(221.2 83.2% 53.3%)" },
   };
 
 
@@ -47,7 +47,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Doses Taken</CardTitle>
-          <CheckCircle className="h-4 w-4 text-green-500" />
+          <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{summary.taken}</div>
@@ -71,7 +71,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Doses Pending</CardTitle>
-          <Bell className="h-4 w-4 text-accent" />
+          <Bell className="h-4 w-4 text-blue-600" />
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{summary.pending}</div>

@@ -1,4 +1,4 @@
-# Pocket-doctor-2
+# Pocket Doctor
 
 This is a NextJS starter in Firebase Studio.
 

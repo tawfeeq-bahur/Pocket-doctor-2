@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { getMedicationGuide, MedicationGuideOutput } from '@/ai/flows/medication-guide';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { LifeBuoy, ThumbsUp, ThumbsDown, Clock, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   medicationName: z.string().min(2, { message: 'Medication name must be at least 2 characters.' }),
@@ -95,12 +96,12 @@ export default function GuidePage() {
                  <InfoCard icon={LifeBuoy} title="Food" content={guide.food} />
               </div>
                <div className="grid md:grid-cols-2 gap-6">
-                <ListCard icon={ThumbsUp} title="Advantages" items={guide.advantages} className="text-green-700" />
-                <ListCard icon={ThumbsDown} title="Disadvantages / Side Effects" items={guide.disadvantages} className="text-red-700" />
+                <ListCard icon={ThumbsUp} title="Advantages" items={guide.advantages} iconClassName="text-green-600" />
+                <ListCard icon={ThumbsDown} title="Disadvantages / Side Effects" items={guide.disadvantages} iconClassName="text-red-600" />
                </div>
                <InfoCard icon={Clock} title="Duration" content={guide.duration} />
-               <Alert variant="default" className="bg-amber-50 border-amber-200 text-amber-800">
-                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+               <Alert variant="default" className="bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/20 dark:border-yellow-800/40 dark:text-yellow-300">
+                  <AlertTriangle className="h-5 w-5 text-yellow-500 dark:text-yellow-400" />
                   <AlertTitle>Disclaimer</AlertTitle>
                   <AlertDescription>
                     {guide.disclaimer}
@@ -124,9 +125,9 @@ const InfoCard = ({ icon: Icon, title, content }: { icon: React.ElementType, tit
     </div>
 );
 
-const ListCard = ({ icon: Icon, title, items, className }: { icon: React.ElementType, title: string, items: string[], className?: string }) => (
+const ListCard = ({ icon: Icon, title, items, iconClassName }: { icon: React.ElementType, title: string, items: string[], iconClassName?: string }) => (
      <div className="flex items-start gap-4 p-4 rounded-lg bg-muted/50">
-        <Icon className={`h-6 w-6 flex-shrink-0 mt-1 ${className}`} />
+        <Icon className={cn("h-6 w-6 flex-shrink-0 mt-1", iconClassName)} />
         <div>
             <h3 className="font-semibold">{title}</h3>
             <ul className="list-disc pl-5 mt-1 space-y-1 text-muted-foreground">
