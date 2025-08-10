@@ -10,12 +10,12 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const MedicationGuideInputSchema = z.object({
+const MedicationGuideInputSchema = z.object({
   medicationName: z.string().describe('The name of the medication to get information about.'),
 });
 export type MedicationGuideInput = z.infer<typeof MedicationGuideInputSchema>;
 
-export const MedicationGuideOutputSchema = z.object({
+const MedicationGuideOutputSchema = z.object({
   medicationName: z.string(),
   timing: z.string().describe('Recommended timing, e.g., "Morning or Evening".'),
   food: z.string().describe('Recommendation regarding food, e.g., "With or without food".'),
