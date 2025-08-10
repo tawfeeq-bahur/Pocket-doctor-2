@@ -22,3 +22,10 @@ export type EmergencyContact = {
   phone: string;
   initials: string;
 };
+
+export type Reminder = {
+  id: string;
+  medicationName: string;
+  time: string;
+  status: 'pending' | 'snoozed';
+};
