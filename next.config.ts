@@ -25,7 +25,6 @@ const nextConfig: NextConfig = {
             'genkit-cli/init': false,
         };
     }
-    // config.externals.push('mapbox-gl');
     return config
   }
 };
