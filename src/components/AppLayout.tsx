@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Medication } from "@/lib/types";
+import { subDays } from "date-fns";
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -56,6 +57,7 @@ const initialMedications: Medication[] = [
     name: "Metformin",
     dosage: "500mg",
     frequency: "Twice a day",
+    startDate: subDays(new Date(), 35).toISOString(),
     timings: ["08:00", "20:00"],
     doses: [
       { scheduled: "08:00", status: "pending" },
@@ -67,6 +69,7 @@ const initialMedications: Medication[] = [
     name: "Lisinopril",
     dosage: "10mg",
     frequency: "Once a day",
+    startDate: subDays(new Date(), 10).toISOString(),
     timings: ["09:00"],
     doses: [{ scheduled: "09:00", status: "taken" }],
   },
@@ -75,6 +78,7 @@ const initialMedications: Medication[] = [
     name: "Atorvastatin",
     dosage: "20mg",
     frequency: "Once a day",
+    startDate: new Date().toISOString(),
     timings: ["21:00"],
     doses: [{ scheduled: "21:00", status: "skipped" }],
   },

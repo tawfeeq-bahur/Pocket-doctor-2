@@ -26,12 +26,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import type { Medication } from "@/lib/types";
-import { add, format } from 'date-fns';
+import { add, format, formatISO } from 'date-fns';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   dosage: z.string().min(1, { message: "Dosage is required." }),
   frequency: z.string().min(1, { message: "Frequency is required." }),
+  startDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
   startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format (HH:mm)"),
   interval: z.coerce.number().min(1, { message: "Interval must be at least 1 hour." }),
@@ -62,6 +63,7 @@ export function AddMedicationDialog({ children, onAddMedication, initialData }: 
       name: initialData?.name || "",
       dosage: initialData?.dosage || "",
       frequency: initialData?.frequency || "",
+      startDate: format(new Date(), 'yyyy-MM-dd'),
       startTime: "08:00",
       endTime: "20:00",
       interval: 12,
@@ -74,6 +76,18 @@ export function AddMedicationDialog({ children, onAddMedication, initialData }: 
         name: initialData.name,
         dosage: initialData.dosage,
         frequency: initialData.frequency,
+        startDate: format(new Date(), 'yyyy-MM-dd'),
+        startTime: "08:00",
+        endTime: "20:00",
+        interval: 12,
+      });
+    }
+     if (!isOpen) {
+      form.reset({
+        name: initialData?.name || "",
+        dosage: initialData?.dosage || "",
+        frequency: initialData?.frequency || "",
+        startDate: format(new Date(), 'yyyy-MM-dd'),
         startTime: "08:00",
         endTime: "20:00",
         interval: 12,
@@ -105,6 +119,7 @@ export function AddMedicationDialog({ children, onAddMedication, initialData }: 
         name: values.name, 
         dosage: values.dosage,
         frequency: values.frequency,
+        startDate: new Date(values.startDate).toISOString(),
         timings: timings.length > 0 ? timings : [startTime]
     });
     form.reset();
@@ -123,33 +138,35 @@ export function AddMedicationDialog({ children, onAddMedication, initialData }: 
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Medication Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Paracetamol" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="dosage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dosage</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., 500mg" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
+             <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Medication Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Paracetamol" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="dosage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dosage</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., 500mg" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+             </div>
+             <FormField
               control={form.control}
               name="frequency"
               render={({ field }) => (
@@ -162,9 +179,21 @@ export function AddMedicationDialog({ children, onAddMedication, initialData }: 
                 </FormItem>
               )}
             />
-             
+             <FormField
+                control={form.control}
+                name="startDate"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Start Date</FormLabel>
+                        <FormControl>
+                            <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
             <div className="space-y-2">
-                <FormLabel>Schedule</FormLabel>
+                <FormLabel>Daily Schedule</FormLabel>
                 <FormDescription>
                     Set the start time, end time, and interval for your doses.
                 </FormDescription>

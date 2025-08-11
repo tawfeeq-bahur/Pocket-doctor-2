@@ -1,6 +1,7 @@
+
 "use client";
 
-import { MoreVertical, Trash2 } from "lucide-react";
+import { MoreVertical, Trash2, Calendar } from "lucide-react";
 import type { Medication } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { differenceInDays, differenceInMonths, formatDistanceToNowStrict } from "date-fns";
 
 type MedicationItemProps = {
   medication: Medication;
@@ -51,6 +53,23 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
     }
   }
 
+  const getDuration = () => {
+    const startDate = new Date(medication.startDate);
+    const now = new Date();
+    const days = differenceInDays(now, startDate);
+    const months = differenceInMonths(now, startDate);
+
+    if (days < 1) {
+      return "Day 1";
+    }
+    
+    if (months >= 1) {
+      return `Month ${months + 1}`;
+    }
+
+    return `Day ${days + 1}`;
+  }
+
   return (
     <Card className="flex flex-col">
       <CardHeader className="flex flex-row items-start justify-between">
@@ -72,7 +91,7 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
             </DropdownMenuContent>
           </DropdownMenu>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow flex flex-col justify-between">
         <div className="space-y-3">
             <h4 className="text-sm font-medium">Today's Schedule</h4>
             {medication.doses.map(dose => (
@@ -99,6 +118,12 @@ export function MedicationItem({ medication, onUpdateDose, onDeleteMedication }:
                 </div>
               </div>
             ))}
+        </div>
+        <div className="mt-4 pt-3 border-t">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar className="h-4 w-4" />
+                <span>{getDuration()}</span>
+            </div>
         </div>
       </CardContent>
     </Card>
