@@ -4,7 +4,7 @@
  *
  * - medicationAssistant - A function that handles medication-related questions and provides personalized advice.
  * - MedicationAssistantInput - The input type for the medicationAssistant function.
- * - MedicationAssistantOutput - The return type for the medicationAssistant function.
+ * - MedicationAssistant-Output - The return type for the medicationAssistant function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -30,6 +30,7 @@ const prompt = ai.definePrompt({
   name: 'medicationAssistantPrompt',
   input: {schema: MedicationAssistantInputSchema},
   output: {schema: MedicationAssistantOutputSchema},
+  model: 'googleai/gemini-2.0-flash-preview',
   prompt: `You are a helpful AI medication assistant. You provide personalized advice and answer questions based on the user's current medications.
 
   Patient context:
@@ -55,9 +56,6 @@ const medicationAssistantFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    if (!output) {
-      throw new Error('AI model failed to return a valid response.');
-    }
-    return output;
+    return output!;
   }
 );

@@ -38,6 +38,7 @@ const prompt = ai.definePrompt({
   name: 'medicationGuidePrompt',
   input: { schema: MedicationGuideInputSchema },
   output: { schema: MedicationGuideOutputSchema },
+  model: 'googleai/gemini-2.0-flash-preview',
   prompt: `
     You are a trusted medical information provider. Your knowledge comes from a vast dataset of medical information.
     For the medication "{{medicationName}}", provide a comprehensive and accurate guide covering all of the following points in detail:
@@ -62,20 +63,7 @@ const medicationGuideFlow = ai.defineFlow(
     outputSchema: MedicationGuideOutputSchema,
   },
   async (input) => {
-    const response = await prompt(input);
-    const output = response.output;
-
-    if (!output) {
-      throw new Error('The AI model failed to return a valid structured response. Please try again.');
-    }
-    
-    // Final validation to be absolutely sure
-    const parsed = MedicationGuideOutputSchema.safeParse(output);
-    if (!parsed.success) {
-        console.error('AI response validation failed:', parsed.error);
-        throw new Error('The AI response was not in the correct format.');
-    }
-
-    return parsed.data;
+    const {output} = await prompt(input);
+    return output!;
   }
 );
