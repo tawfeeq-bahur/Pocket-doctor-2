@@ -2,20 +2,37 @@
 "use client";
 
 import { useMemo } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, AreaChart, Area, CartesianGrid } from 'recharts';
 import { CheckCircle, XCircle, Bell, Pill, CalendarDays } from 'lucide-react';
 import type { Medication } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Progress } from '@/components/ui/progress';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, subDays, format } from 'date-fns';
 
 type MedicationSummaryProps = {
   medications: Medication[];
 };
 
+// Helper function to generate mock historical data for the area chart
+const generateHistoricalData = () => {
+  const data = [];
+  for (let i = 29; i >= 0; i--) {
+    const date = subDays(new Date(), i);
+    const taken = Math.floor(Math.random() * 4) + 1; // Random taken doses between 1 and 4
+    const skipped = Math.floor(Math.random() * 2); // Random skipped doses between 0 and 1
+    data.push({
+      date: format(date, "MMM d"),
+      taken: taken,
+      skipped: skipped,
+    });
+  }
+  return data;
+};
+
+
 export function MedicationSummary({ medications }: MedicationSummaryProps) {
-  const { overallSummary, medicationDetails, durationData } = useMemo(() => {
+  const { overallSummary, medicationDetails, durationData, historicalAdherence } = useMemo(() => {
     let taken = 0;
     let skipped = 0;
     let pending = 0;
@@ -45,20 +62,17 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
         name: med.name,
         days: differenceInDays(new Date(), new Date(med.startDate)) + 1
     }));
+    
+    const historical = generateHistoricalData();
 
     const total = taken + skipped + pending;
     return { 
       overallSummary: { taken, skipped, pending, total },
       medicationDetails: details,
       durationData: duration,
+      historicalAdherence: historical,
     };
   }, [medications]);
-
-  const chartData = [
-    { name: 'Taken', value: overallSummary.taken, fill: 'hsl(var(--chart-1))' },
-    { name: 'Skipped', value: overallSummary.skipped, fill: 'hsl(var(--chart-2))' },
-    { name: 'Pending', value: overallSummary.pending, fill: 'hsl(var(--chart-3))' },
-  ].filter(d => d.value > 0);
 
   const chartConfig = {
     taken: { label: "Taken", color: "hsl(var(--chart-1))" },
@@ -78,7 +92,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
         <CardContent>
           <div className="text-2xl font-bold">{overallSummary.taken}</div>
           <p className="text-xs text-muted-foreground">
-            out of {overallSummary.total} total doses
+            out of {overallSummary.total} total doses today
           </p>
         </CardContent>
       </Card>
@@ -90,70 +104,63 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
         <CardContent>
           <div className="text-2xl font-bold">{overallSummary.skipped}</div>
            <p className="text-xs text-muted-foreground">
-            out of {overallSummary.total} total doses
+            out of {overallSummary.total} total doses today
           </p>
         </CardContent>
       </Card>
-      <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Doses Pending</CardTitle>
-          <Bell className="h-4 w-4 text-accent" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{overallSummary.pending}</div>
-           <p className="text-xs text-muted-foreground">
-            out of {overallSummary.total} total doses
-          </p>
-        </CardContent>
-      </Card>
+      
       <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
         <CardHeader>
-          <CardTitle>Adherence Overview</CardTitle>
-          <CardDescription>Today's dose status for all medications.</CardDescription>
+          <CardTitle>Adherence Over Time</CardTitle>
+          <CardDescription>Doses taken vs. skipped over the last 30 days.</CardDescription>
         </CardHeader>
-        <CardContent className="h-[160px] pb-4 flex items-center justify-center">
-          <ChartContainer config={chartConfig} className="w-full h-full max-w-[250px] aspect-square">
-            <ResponsiveContainer width="100%" height="100%">
-               {overallSummary.total > 0 ? (
-                <PieChart>
-                  <RechartsTooltip
-                    cursor={true}
-                    content={<ChartTooltipContent hideLabel />}
-                  />
-                  <Pie
-                    data={chartData}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    strokeWidth={5}
-                    outerRadius={80}
-                  >
-                    {chartData.map((entry) => (
-                      <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={entry.fill} />
-                    ))}
-                  </Pie>
-                   <ChartLegend
-                    content={<ChartLegendContent nameKey="name" className="text-xs" />}
-                    wrapperStyle={{fontSize: '0.8rem', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}
-                  />
-                </PieChart>
-               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <Pill className="w-8 h-8 mb-2" />
-                  <p className="text-xs">No dose data available</p>
-                </div>
-               )}
-            </ResponsiveContainer>
-          </ChartContainer>
+        <CardContent className="h-[200px] w-full pb-4 pl-2">
+            <ChartContainer config={chartConfig} className="w-full h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                        data={historicalAdherence}
+                        margin={{
+                            top: 10,
+                            right: 10,
+                            left: -20,
+                            bottom: 0,
+                        }}
+                    >
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                        <XAxis 
+                            dataKey="date" 
+                            tickLine={false} 
+                            axisLine={false} 
+                            tickMargin={8}
+                            fontSize={12}
+                             tickFormatter={(value, index) => index % 5 === 0 ? value : ''}
+                        />
+                        <YAxis tickLine={false} axisLine={false} tickMargin={8} fontSize={12} />
+                        <ChartTooltip cursor={true} content={<ChartTooltipContent indicator="dot" />} />
+                        <Area
+                            dataKey="taken"
+                            type="natural"
+                            fill="hsl(var(--chart-1) / 0.4)"
+                            stroke="hsl(var(--chart-1))"
+                            stackId="a"
+                        />
+                         <Area
+                            dataKey="skipped"
+                            type="natural"
+                            fill="hsl(var(--chart-2) / 0.4)"
+                            stroke="hsl(var(--chart-2))"
+                            stackId="a"
+                        />
+                    </AreaChart>
+                </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
 
       <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
         <CardHeader>
           <CardTitle>Per-Medication Adherence</CardTitle>
-          <CardDescription>Adherence percentage for each medication.</CardDescription>
+          <CardDescription>Today's adherence percentage for each medication.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {medicationDetails.length > 0 ? (
