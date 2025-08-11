@@ -54,12 +54,8 @@ export default function ProfilePage() {
           </h1>
           <p className="text-muted-foreground">View and edit your personal information.</p>
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Details</CardTitle>
-            <CardDescription>Update your photo and personal details here.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
+        
+        <div className="space-y-6 pt-6">
             <div className="flex items-center gap-6">
               <Avatar className="h-20 w-20">
                 <AvatarImage src={avatarPreview || "https://placehold.co/80x80.png"} alt="User" data-ai-hint="person portrait" />
@@ -101,8 +97,8 @@ export default function ProfilePage() {
               <div>
                 <Button onClick={handleSaveChanges}>Save Changes</Button>
               </div>
-          </CardContent>
-        </Card>
+          </div>
+
       </div>
   );
 }
