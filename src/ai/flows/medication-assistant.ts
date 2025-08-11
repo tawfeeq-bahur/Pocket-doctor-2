@@ -30,7 +30,7 @@ const prompt = ai.definePrompt({
   name: 'medicationAssistantPrompt',
   input: {schema: MedicationAssistantInputSchema},
   output: {schema: MedicationAssistantOutputSchema},
-  model: 'googleai/gemini-2.0-flash-preview',
+  model: 'googleai/gemini-2.5-flash',
   prompt: `You are a helpful AI medication assistant. You provide personalized advice and answer questions based on the user's current medications.
 
   Patient context:

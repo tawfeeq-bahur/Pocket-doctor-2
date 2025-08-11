@@ -38,7 +38,7 @@ const prompt = ai.definePrompt({
   name: 'medicationGuidePrompt',
   input: { schema: MedicationGuideInputSchema },
   output: { schema: MedicationGuideOutputSchema },
-  model: 'googleai/gemini-2.0-flash-preview',
+  model: 'googleai/gemini-2.5-flash',
   prompt: `
     You are a trusted medical information provider. Your knowledge comes from a vast dataset of medical information.
     For the medication "{{medicationName}}", provide a comprehensive and accurate guide covering all of the following points in detail:
