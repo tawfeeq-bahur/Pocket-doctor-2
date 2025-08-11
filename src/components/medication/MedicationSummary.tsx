@@ -55,15 +55,15 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
   }, [medications]);
 
   const chartData = [
-    { name: 'Taken', value: overallSummary.taken, fill: 'hsl(142.1 76.2% 36.3%)' }, // green-600
-    { name: 'Skipped', value: overallSummary.skipped, fill: 'hsl(var(--destructive))' },
-    { name: 'Pending', value: overallSummary.pending, fill: 'hsl(210 30% 60%)' }, // accent
+    { name: 'Taken', value: overallSummary.taken, fill: 'hsl(var(--chart-1))' },
+    { name: 'Skipped', value: overallSummary.skipped, fill: 'hsl(var(--chart-2))' },
+    { name: 'Pending', value: overallSummary.pending, fill: 'hsl(var(--chart-3))' },
   ].filter(d => d.value > 0);
 
   const chartConfig = {
-    taken: { label: "Taken", color: "hsl(142.1 76.2% 36.3%)" },
-    skipped: { label: "Skipped", color: "hsl(var(--destructive))" },
-    pending: { label: "Pending", color: "hsl(210 30% 60%)" },
+    taken: { label: "Taken", color: "hsl(var(--chart-1))" },
+    skipped: { label: "Skipped", color: "hsl(var(--chart-2))" },
+    pending: { label: "Pending", color: "hsl(var(--chart-3))" },
     days: { label: "Days Taken", color: "hsl(var(--primary))" },
   };
 
@@ -111,13 +111,13 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
           <CardTitle>Adherence Overview</CardTitle>
           <CardDescription>Today's dose status for all medications.</CardDescription>
         </CardHeader>
-        <CardContent className="h-[160px] pb-4">
-          <ChartContainer config={chartConfig} className="w-full h-full">
+        <CardContent className="h-[160px] pb-4 flex items-center justify-center">
+          <ChartContainer config={chartConfig} className="w-full h-full max-w-[250px] aspect-square">
             <ResponsiveContainer width="100%" height="100%">
                {overallSummary.total > 0 ? (
                 <PieChart>
                   <RechartsTooltip
-                    cursor={false}
+                    cursor={true}
                     content={<ChartTooltipContent hideLabel />}
                   />
                   <Pie
@@ -126,16 +126,17 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
                     nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={60}
-                    strokeWidth={2}
+                    innerRadius={60}
+                    strokeWidth={5}
+                    outerRadius={80}
                   >
-                    {chartData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    {chartData.map((entry) => (
+                      <Cell key={`cell-${entry.name}`} fill={entry.fill} stroke={entry.fill} />
                     ))}
                   </Pie>
                    <ChartLegend
-                    content={<ChartLegendContent nameKey="name" />}
-                    wrapperStyle={{fontSize: '0.8rem'}}
+                    content={<ChartLegendContent nameKey="name" className="text-xs" />}
+                    wrapperStyle={{fontSize: '0.8rem', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)'}}
                   />
                 </PieChart>
                ) : (
