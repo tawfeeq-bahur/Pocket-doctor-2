@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Hospital, MapPin, Stethoscope, Star } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -40,18 +39,27 @@ export default function NearbyPage() {
   const mapRef = useRef<any>();
   const watchId = useRef<number | null>(null);
 
-  useEffect(() => {
+   useEffect(() => {
+    if (!MAPBOX_TOKEN) {
+      setError("Mapbox API key is not configured. Please add it to your environment variables.");
+      setLoading(false);
+      return;
+    }
+
     // Function to handle successful location watch
     const handleSuccess = (position: GeolocationPosition) => {
       const { latitude, longitude } = position.coords;
       const newLocation = { latitude, longitude };
-      setLocation(newLocation);
-
-      // Only set viewport on the first location update
-      if (!location) {
-        setViewport(v => ({ ...v, latitude, longitude, zoom: 14 }));
-        fetchNearbyPlaces(longitude, latitude);
-      }
+      
+      // Use a functional update to avoid stale state issues
+      setLocation(currentLocation => {
+        // Only fetch places and update viewport on the very first location fix
+        if (!currentLocation) {
+          setViewport(v => ({ ...v, latitude, longitude, zoom: 14 }));
+          fetchNearbyPlaces(longitude, latitude);
+        }
+        return newLocation;
+      });
     };
     
     // Function to handle location error
@@ -73,7 +81,7 @@ export default function NearbyPage() {
         navigator.geolocation.clearWatch(watchId.current);
       }
     };
-  }, [location]); // Rerun effect if location object identity changes (first time)
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   const fetchNearbyPlaces = async (longitude: number, latitude: number) => {
     setLoading(true);
@@ -154,60 +162,63 @@ export default function NearbyPage() {
 
       {/* Map */}
       <div className="absolute inset-0 z-0">
-         <Map
-          ref={mapRef}
-          {...viewport}
-          onMove={evt => setViewport(evt.viewState)}
-          mapboxAccessToken={MAPBOX_TOKEN}
-          mapStyle="mapbox://styles/mapbox/streets-v11"
-        >
-          {location && (
-            <Marker longitude={location.longitude} latitude={location.latitude}>
-                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-pulse" />
-            </Marker>
-          )}
-          {places.map(place => (
-            <Marker
-              key={place.id}
-              longitude={place.geometry.coordinates[0]}
-              latitude={place.geometry.coordinates[1]}
-              onClick={(e) => {
-                 e.originalEvent.stopPropagation();
-                 setSelectedPlace(place);
-              }}
+        {MAPBOX_TOKEN ? (
+            <Map
+              ref={mapRef}
+              {...viewport}
+              onMove={evt => setViewport(evt.viewState)}
+              mapboxAccessToken={MAPBOX_TOKEN}
+              mapStyle="mapbox://styles/mapbox/streets-v11"
             >
-              <MapPin className={`h-6 w-6 ${place.type === 'hospital' ? 'text-destructive' : 'text-primary'}`} />
-            </Marker>
-          ))}
-          
-           {selectedPlace && (
-            <Popup
-              longitude={selectedPlace.geometry.coordinates[0]}
-              latitude={selectedPlace.geometry.coordinates[1]}
-              onClose={() => setSelectedPlace(null)}
-              closeOnClick={false}
-              anchor="bottom"
-              offset={30}
-            >
-              <div>
-                <h3 className="font-bold">{selectedPlace.properties.name}</h3>
-                <p>{selectedPlace.properties.address}</p>
-                 <a 
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.geometry.coordinates[1]},${selectedPlace.geometry.coordinates[0]}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
-                 >
-                    Get Directions
-                 </a>
-              </div>
-            </Popup>
-          )}
-
-        </Map>
+              {location && (
+                <Marker longitude={location.longitude} latitude={location.latitude}>
+                    <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-pulse" />
+                </Marker>
+              )}
+              {places.map(place => (
+                <Marker
+                  key={place.id}
+                  longitude={place.geometry.coordinates[0]}
+                  latitude={place.geometry.coordinates[1]}
+                  onClick={(e) => {
+                    e.originalEvent.stopPropagation();
+                    setSelectedPlace(place);
+                  }}
+                >
+                  <MapPin className={`h-6 w-6 ${place.type === 'hospital' ? 'text-destructive' : 'text-primary'}`} />
+                </Marker>
+              ))}
+              
+              {selectedPlace && (
+                <Popup
+                  longitude={selectedPlace.geometry.coordinates[0]}
+                  latitude={selectedPlace.geometry.coordinates[1]}
+                  onClose={() => setSelectedPlace(null)}
+                  closeOnClick={false}
+                  anchor="bottom"
+                  offset={30}
+                >
+                  <div>
+                    <h3 className="font-bold">{selectedPlace.properties.name}</h3>
+                    <p>{selectedPlace.properties.address}</p>
+                    <a 
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPlace.geometry.coordinates[1]},${selectedPlace.geometry.coordinates[0]}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline"
+                    >
+                        Get Directions
+                    </a>
+                  </div>
+                </Popup>
+              )}
+            </Map>
+         ) : (
+          <div className="w-full h-full bg-muted flex items-center justify-center">
+            <p className="text-muted-foreground">Map is unavailable.</p>
+          </div>
+         )}
       </div>
     </div>
   );
 }
-
-    
