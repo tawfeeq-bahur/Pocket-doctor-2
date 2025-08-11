@@ -63,7 +63,7 @@ const medicationGuideFlow = ai.defineFlow(
   },
   async (input) => {
     const response = await prompt(input);
-    const output = response.output();
+    const output = response.output;
 
     if (!output) {
       throw new Error('The AI model failed to return a valid structured response. Please try again.');
