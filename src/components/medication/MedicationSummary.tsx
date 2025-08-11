@@ -2,19 +2,20 @@
 "use client";
 
 import { useMemo } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { CheckCircle, XCircle, Bell, Pill } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
+import { CheckCircle, XCircle, Bell, Pill, CalendarDays } from 'lucide-react';
 import type { Medication } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Progress } from '@/components/ui/progress';
+import { differenceInDays } from 'date-fns';
 
 type MedicationSummaryProps = {
   medications: Medication[];
 };
 
 export function MedicationSummary({ medications }: MedicationSummaryProps) {
-  const { overallSummary, medicationDetails } = useMemo(() => {
+  const { overallSummary, medicationDetails, durationData } = useMemo(() => {
     let taken = 0;
     let skipped = 0;
     let pending = 0;
@@ -40,10 +41,16 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
       };
     });
 
+    const duration = medications.map(med => ({
+        name: med.name,
+        days: differenceInDays(new Date(), new Date(med.startDate)) + 1
+    }));
+
     const total = taken + skipped + pending;
     return { 
       overallSummary: { taken, skipped, pending, total },
-      medicationDetails: details
+      medicationDetails: details,
+      durationData: duration,
     };
   }, [medications]);
 
@@ -57,6 +64,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
     taken: { label: "Taken", color: "hsl(142.1 76.2% 36.3%)" },
     skipped: { label: "Skipped", color: "hsl(var(--destructive))" },
     pending: { label: "Pending", color: "hsl(210 30% 60%)" },
+    days: { label: "Days Taken", color: "hsl(var(--primary))" },
   };
 
 
@@ -108,7 +116,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
             <ResponsiveContainer width="100%" height="100%">
                {overallSummary.total > 0 ? (
                 <PieChart>
-                  <Tooltip
+                  <RechartsTooltip
                     cursor={false}
                     content={<ChartTooltipContent hideLabel />}
                   />
@@ -163,6 +171,44 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
               <p className="text-xs">No medications to track.</p>
             </div>
           )}
+        </CardContent>
+      </Card>
+      
+      <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+        <CardHeader>
+            <CardTitle>Medication Duration</CardTitle>
+            <CardDescription>How long you've been taking each medication.</CardDescription>
+        </CardHeader>
+        <CardContent className="h-[200px] pr-0">
+             <ChartContainer config={chartConfig} className="w-full h-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    {durationData.length > 0 ? (
+                        <BarChart data={durationData} layout="vertical" margin={{ left: 10, right: 30 }}>
+                             <XAxis type="number" dataKey="days" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                             <YAxis 
+                                type="category" 
+                                dataKey="name" 
+                                width={80}
+                                stroke="hsl(var(--muted-foreground))" 
+                                fontSize={12} 
+                                tickLine={false} 
+                                axisLine={false} 
+                                tick={{ dx: -10 }}
+                             />
+                            <RechartsTooltip
+                                cursor={false}
+                                content={<ChartTooltipContent indicator="dot" />}
+                            />
+                            <Bar dataKey="days" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                    ) : (
+                         <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                            <CalendarDays className="w-8 h-8 mb-2" />
+                            <p className="text-xs">No duration data available.</p>
+                        </div>
+                    )}
+                </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
     </div>
