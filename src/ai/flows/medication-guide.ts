@@ -39,18 +39,18 @@ const prompt = ai.definePrompt({
   input: { schema: MedicationGuideInputSchema },
   output: { schema: MedicationGuideOutputSchema },
   prompt: `
-    You are a trusted medical information provider.
-    For the medication "{{medicationName}}", provide a concise guide covering the following points:
-    - Suggested Dosage
-    - Suggested Frequency
-    - Timing (e.g., Morning, Evening, with meals)
-    - Food (e.g., With or without food)
-    - Advantages (List a few key points)
-    - Disadvantages / Side Effects (List a few key points)
-    - Duration (e.g., "As prescribed by your doctor")
+    You are a trusted medical information provider. Your knowledge comes from a vast dataset of medical information.
+    For the medication "{{medicationName}}", provide a comprehensive and accurate guide covering all of the following points in detail:
+    - Suggested Dosage (e.g., '10mg' or '500mg')
+    - Suggested Frequency (e.g., 'Once a day' or 'Twice a day with a 12-hour interval')
+    - Timing (e.g., 'Best taken in the morning', 'Evening with meals')
+    - Food (e.g., 'With or without food. Taking it with food can reduce stomach upset.')
+    - Key Advantages / Benefits (Provide a list of the primary uses and benefits)
+    - Common Disadvantages / Side Effects (Provide a list of potential side effects)
+    - Duration (e.g., 'As prescribed by your doctor', 'For short-term use only')
 
-    Provide a clear and easy-to-understand response in the requested format.
-    Finally, you must include the following disclaimer text exactly as it is written here in the 'disclaimer' field: "This information is for educational purposes only and not a substitute for professional medical advice. Always consult your doctor or pharmacist."
+    Provide a clear, easy-to-understand, and well-structured response in the requested format.
+    Finally, you MUST include the following disclaimer text exactly as it is written here in the 'disclaimer' field: "This information is for educational purposes only and not a substitute for professional medical advice. Always consult your doctor or pharmacist."
   `,
 });
 
@@ -62,10 +62,20 @@ const medicationGuideFlow = ai.defineFlow(
     outputSchema: MedicationGuideOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const response = await prompt(input);
+    const output = response.output();
+
     if (!output) {
-      throw new Error('AI model failed to return a valid response.');
+      throw new Error('The AI model failed to return a valid structured response. Please try again.');
     }
-    return output;
+    
+    // Final validation to be absolutely sure
+    const parsed = MedicationGuideOutputSchema.safeParse(output);
+    if (!parsed.success) {
+        console.error('AI response validation failed:', parsed.error);
+        throw new Error('The AI response was not in the correct format.');
+    }
+
+    return parsed.data;
   }
 );
