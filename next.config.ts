@@ -18,6 +18,15 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+        config.resolve.alias = {
+            ...config.resolve.alias,
+            'genkit-cli/init': false,
+        };
+    }
+    return config
+  }
 };
 
 export default nextConfig;
