@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Medication } from "@/lib/types";
 import { subDays } from "date-fns";
+import { ThemeToggle } from "./ThemeToggle";
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -140,13 +141,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           <div className="flex min-h-screen">
             <Sidebar>
               <SidebarHeader>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
-                    <Pill className="h-4 w-4" />
-                  </Button>
-                  <div className="flex flex-col">
-                    <span className="font-semibold font-headline">Pocket Doctor</span>
-                  </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0 rounded-full bg-sidebar-primary text-sidebar-primary-foreground">
+                            <Pill className="h-4 w-4" />
+                        </Button>
+                        <div className="flex flex-col">
+                            <span className="font-semibold font-headline">Pocket Doctor</span>
+                        </div>
+                    </div>
+                     <ThemeToggle />
                 </div>
               </SidebarHeader>
               <SidebarContent>
@@ -187,6 +191,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6 md:hidden">
                   <SidebarTrigger />
                   <h1 className="text-lg font-semibold font-headline">Pocket Doctor</h1>
+                  <div className="ml-auto">
+                    <ThemeToggle />
+                  </div>
                 </header>
                 <SidebarInset>{children}</SidebarInset>
             </div>

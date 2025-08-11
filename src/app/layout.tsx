@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { AppLayout, SharedStateProvider } from '@/components/AppLayout';
+import { ThemeProvider } from '@/components/ThemeProvider';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -23,12 +24,19 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} font-body antialiased`}>
-        <SharedStateProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
-        </SharedStateProvider>
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <SharedStateProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+          </SharedStateProvider>
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
