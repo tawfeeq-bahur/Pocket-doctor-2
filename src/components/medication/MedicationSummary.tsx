@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo } from 'react';
@@ -43,7 +44,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
 
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Doses Taken</CardTitle>
@@ -68,7 +69,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
           </p>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Doses Pending</CardTitle>
           <Bell className="h-4 w-4 text-blue-600" />
@@ -80,7 +81,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
           </p>
         </CardContent>
       </Card>
-      <Card className="md:col-span-2 lg:col-span-1">
+      <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
         <CardHeader>
           <CardTitle className="text-sm font-medium">Adherence Overview</CardTitle>
         </CardHeader>
