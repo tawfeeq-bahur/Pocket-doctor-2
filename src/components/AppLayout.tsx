@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, Bell, BookUser, LifeBuoy } from "lucide-react";
+import { Bot, LayoutDashboard, Pill, Settings, User, Bell, BookUser, LifeBuoy, Map } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -27,6 +27,7 @@ const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
+  { href: "/nearby", label: "Nearby Services", icon: Map },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
