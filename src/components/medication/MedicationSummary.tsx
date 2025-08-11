@@ -140,16 +140,14 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
                         <Area
                             dataKey="taken"
                             type="natural"
-                            fill="hsl(var(--chart-1) / 0.4)"
+                            fill="hsl(var(--chart-1) / 0.8)"
                             stroke="hsl(var(--chart-1))"
-                            stackId="a"
                         />
                          <Area
                             dataKey="skipped"
                             type="natural"
                             fill="hsl(var(--chart-2) / 0.4)"
                             stroke="hsl(var(--chart-2))"
-                            stackId="a"
                         />
                     </AreaChart>
                 </ResponsiveContainer>
