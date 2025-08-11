@@ -30,6 +30,7 @@ const prompt = ai.definePrompt({
   name: 'medicationAssistantPrompt',
   input: {schema: MedicationAssistantInputSchema},
   output: {schema: MedicationAssistantOutputSchema},
+  model: 'googleai/gemini-2.0-flash',
   prompt: `You are a helpful AI medication assistant. You provide personalized advice and answer questions based on the user's current medications.
 
   Patient context:
@@ -56,12 +57,8 @@ const medicationAssistantFlow = ai.defineFlow(
   async input => {
     const {output} = await prompt(input);
     if (!output) {
-      throw new Error('Failed to get a response from the AI model.');
+      throw new Error('AI model failed to return a valid response.');
     }
-    const validatedOutput = MedicationAssistantOutputSchema.safeParse(output);
-    if (!validatedOutput.success) {
-      throw new Error(`AI model returned invalid data format for the assistant. Errors: ${JSON.stringify(validatedOutput.error.issues)}`);
-    }
-    return validatedOutput.data;
+    return output;
   }
 );

@@ -37,19 +37,20 @@ const prompt = ai.definePrompt({
   name: 'medicationGuidePrompt',
   input: { schema: MedicationGuideInputSchema },
   output: { schema: MedicationGuideOutputSchema },
+  model: 'googleai/gemini-2.0-flash',
   prompt: `
     You are a trusted medical information provider.
     For the medication "{{medicationName}}", provide a concise guide covering the following points:
-    - Suggested Dosage: What is a common dosage for this medication?
-    - Suggested Frequency: How often is this medication typically taken?
-    - Timing: When is it best to take it? (e.g., Morning, Evening, with meals)
-    - Food: Should it be taken with or without food?
-    - Advantages: What are its primary benefits? List a few key points.
-    - Disadvantages: What are the common side effects or disadvantages? List a few key points.
-    - Duration: What is a typical duration for its use? (e.g., "As prescribed by your doctor", "For 7 days")
+    - Suggested Dosage
+    - Suggested Frequency
+    - Timing (e.g., Morning, Evening, with meals)
+    - Food (e.g., With or without food)
+    - Advantages (List a few key points)
+    - Disadvantages / Side Effects (List a few key points)
+    - Duration (e.g., "As prescribed by your doctor")
 
-    Provide a clear and easy-to-understand response.
-    Finally, always include a disclaimer: "This information is for educational purposes only and not a substitute for professional medical advice. Always consult your doctor or pharmacist."
+    Provide a clear and easy-to-understand response in the requested format.
+    Finally, you must include the following disclaimer text exactly as it is written here in the 'disclaimer' field: "This information is for educational purposes only and not a substitute for professional medical advice. Always consult your doctor or pharmacist."
   `,
 });
 
@@ -63,12 +64,8 @@ const medicationGuideFlow = ai.defineFlow(
   async (input) => {
     const { output } = await prompt(input);
     if (!output) {
-      throw new Error('Failed to get medication guide from the AI model.');
+      throw new Error('AI model failed to return a valid response.');
     }
-    const validatedOutput = MedicationGuideOutputSchema.safeParse(output);
-    if (!validatedOutput.success) {
-      throw new Error(`AI model returned invalid data format. Errors: ${JSON.stringify(validatedOutput.error.issues)}`);
-    }
-    return validatedOutput.data;
+    return output;
   }
 );
