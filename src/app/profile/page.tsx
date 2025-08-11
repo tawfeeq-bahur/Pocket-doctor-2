@@ -74,116 +74,121 @@ export default function ProfilePage() {
         
         <Separator />
 
-        <div className="space-y-8 pt-6">
-            {/* Basic Info and Avatar */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Basic Information</CardTitle>
-                    <CardDescription>Update your photo and basic personal details.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-center gap-6">
-                        <Avatar className="h-20 w-20">
-                            <AvatarImage src={avatarPreview || "https://placehold.co/80x80.png"} alt="User" data-ai-hint="person portrait" />
-                            <AvatarFallback>U</AvatarFallback>
+        <div className="grid md:grid-cols-3 gap-8 pt-6">
+            {/* Left Column for Avatar & Basic Info */}
+            <div className="md:col-span-1 space-y-6">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Profile Picture</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center gap-6">
+                        <Avatar className="h-32 w-32">
+                            <AvatarImage src={avatarPreview || "https://placehold.co/128x128.png"} alt="User" data-ai-hint="person portrait" />
+                            <AvatarFallback className="text-4xl">U</AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                            <Label htmlFor="picture">Profile Picture</Label>
+                        <div className="w-full">
                             <Input 
                                 id="picture" 
                                 type="file" 
-                                className="mt-2" 
                                 ref={fileInputRef}
                                 onChange={handlePictureChange}
                                 accept="image/png, image/jpeg, image/gif"
                             />
-                            <p className="text-xs text-muted-foreground mt-1">PNG, JPG, GIF up to 10MB.</p>
+                            <p className="text-xs text-muted-foreground mt-2">PNG, JPG, GIF up to 10MB.</p>
                         </div>
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-4">
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Contact</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" value={profile.email} onChange={handleInputChange} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="phone">Phone Number</Label>
+                            <Input id="phone" type="tel" value={profile.phone} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Right Column for Detailed Forms */}
+            <div className="md:col-span-2 space-y-6">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Personal Details</CardTitle>
+                        <CardDescription>Update your personal information.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                             <Label htmlFor="name">Full Name</Label>
                             <Input id="name" value={profile.name} onChange={handleInputChange} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" value={profile.email} onChange={handleInputChange} />
+                           <Label htmlFor="dob">Date of Birth</Label>
+                           <Input id="dob" type="date" value={profile.dob} onChange={handleInputChange} />
                         </div>
-                    </div>
-                </CardContent>
-            </Card>
+                        <div className="space-y-2">
+                            <Label htmlFor="gender">Gender</Label>
+                            <Select value={profile.gender} onValueChange={(value) => handleSelectChange('gender', value)}>
+                                <SelectTrigger id="gender">
+                                    <SelectValue placeholder="Select gender" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="male">Male</SelectItem>
+                                    <SelectItem value="female">Female</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bloodGroup">Blood Group</Label>
+                            <Input id="bloodGroup" value={profile.bloodGroup} onChange={handleInputChange} />
+                        </div>
+                        <div className="space-y-2 md:col-span-2">
+                            <Label htmlFor="address">Address</Label>
+                            <Input id="address" value={profile.address} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
 
-            {/* Detailed Personal Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Personal Details</CardTitle>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="dob">Date of Birth</Label>
-                        <Input id="dob" type="date" value={profile.dob} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input id="phone" type="tel" value={profile.phone} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="gender">Gender</Label>
-                        <Select value={profile.gender} onValueChange={(value) => handleSelectChange('gender', value)}>
-                            <SelectTrigger id="gender">
-                                <SelectValue placeholder="Select gender" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="male">Male</SelectItem>
-                                <SelectItem value="female">Female</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="bloodGroup">Blood Group</Label>
-                        <Input id="bloodGroup" value={profile.bloodGroup} onChange={handleInputChange} />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="address">Address</Label>
-                        <Input id="address" value={profile.address} onChange={handleInputChange} />
-                    </div>
-                </CardContent>
-            </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Medical Information</CardTitle>
+                         <CardDescription>Provide any relevant medical details.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-1 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="allergies">Allergies</Label>
+                            <Textarea id="allergies" placeholder="e.g., Peanuts, Penicillin" value={profile.allergies} onChange={handleInputChange} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="chronicConditions">Chronic Conditions</Label>
+                            <Textarea id="chronicConditions" placeholder="e.g., Hypertension, Asthma" value={profile.chronicConditions} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
 
-             {/* Medical Information */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Medical Information</CardTitle>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-1 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="allergies">Allergies</Label>
-                        <Textarea id="allergies" placeholder="e.g., Peanuts, Penicillin" value={profile.allergies} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="chronicConditions">Chronic Conditions</Label>
-                        <Textarea id="chronicConditions" placeholder="e.g., Hypertension, Asthma" value={profile.chronicConditions} onChange={handleInputChange} />
-                    </div>
-                </CardContent>
-            </Card>
-
-             {/* Emergency Contact */}
-            <Card>
-                <CardHeader>
-                    <CardTitle>Emergency Contact</CardTitle>
-                </CardHeader>
-                <CardContent className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="emergencyContactName">Contact Name</Label>
-                        <Input id="emergencyContactName" value={profile.emergencyContactName} onChange={handleInputChange} />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="emergencyContactPhone">Contact Phone</Label>
-                        <Input id="emergencyContactPhone" type="tel" value={profile.emergencyContactPhone} onChange={handleInputChange} />
-                    </div>
-                </CardContent>
-            </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Emergency Contact</CardTitle>
+                        <CardDescription>This person will be contacted in an emergency.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="emergencyContactName">Contact Name</Label>
+                            <Input id="emergencyContactName" value={profile.emergencyContactName} onChange={handleInputChange} />
+                        </div>
+                         <div className="space-y-2">
+                            <Label htmlFor="emergencyContactPhone">Contact Phone</Label>
+                            <Input id="emergencyContactPhone" type="tel" value={profile.emergencyContactPhone} onChange={handleInputChange} />
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       </div>
   );
