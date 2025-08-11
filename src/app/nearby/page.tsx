@@ -5,7 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useState, useEffect, useRef } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Hospital, MapPin, Stethoscope } from 'lucide-react';
+import { Hospital, MapPin, Stethoscope, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -22,6 +22,7 @@ interface Place {
     address?: string;
   };
   type: 'hospital' | 'pharmacy';
+  rating: number; // Simulated rating
 }
 
 export default function NearbyPage() {
@@ -36,25 +37,43 @@ export default function NearbyPage() {
     zoom: 12,
   });
 
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setLocation({ latitude, longitude });
-        setViewport(v => ({ ...v, latitude, longitude }));
-      },
-      (err) => {
-        setError('Could not get your location. Please enable location services in your browser.');
-        setLoading(false);
-      }
-    );
-  }, []);
+  const mapRef = useRef<any>();
+  const watchId = useRef<number | null>(null);
 
   useEffect(() => {
-    if (location) {
-      fetchNearbyPlaces(location.longitude, location.latitude);
-    }
-  }, [location]);
+    // Function to handle successful location watch
+    const handleSuccess = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords;
+      const newLocation = { latitude, longitude };
+      setLocation(newLocation);
+
+      // Only set viewport on the first location update
+      if (!location) {
+        setViewport(v => ({ ...v, latitude, longitude, zoom: 14 }));
+        fetchNearbyPlaces(longitude, latitude);
+      }
+    };
+    
+    // Function to handle location error
+    const handleError = (err: GeolocationPositionError) => {
+      setError('Could not get your location. Please enable location services in your browser.');
+      setLoading(false);
+    };
+
+    // Start watching position
+    watchId.current = navigator.geolocation.watchPosition(handleSuccess, handleError, {
+      enableHighAccuracy: true,
+      timeout: 5000,
+      maximumAge: 0,
+    });
+
+    // Cleanup watcher on component unmount
+    return () => {
+      if (watchId.current !== null) {
+        navigator.geolocation.clearWatch(watchId.current);
+      }
+    };
+  }, [location]); // Rerun effect if location object identity changes (first time)
 
   const fetchNearbyPlaces = async (longitude: number, latitude: number) => {
     setLoading(true);
@@ -73,10 +92,10 @@ export default function NearbyPage() {
       const hospitalData = await hospitalRes.json();
       const pharmacyData = await pharmacyRes.json();
 
-      const hospitals = hospitalData.features.map((f: any) => ({ ...f, type: 'hospital' }));
-      const pharmacies = pharmacyData.features.map((f: any) => ({ ...f, type: 'pharmacy' }));
+      const hospitals = hospitalData.features.map((f: any) => ({ ...f, type: 'hospital', rating: parseFloat((Math.random() * (5 - 3.5) + 3.5).toFixed(1)) }));
+      const pharmacies = pharmacyData.features.map((f: any) => ({ ...f, type: 'pharmacy', rating: parseFloat((Math.random() * (5 - 3.5) + 3.5).toFixed(1)) }));
 
-      setPlaces([...hospitals, ...pharmacies]);
+      setPlaces([...hospitals, ...pharmacies].sort((a,b) => b.rating - a.rating));
 
     } catch (err: any) {
       setError(err.message || "An error occurred while fetching data.");
@@ -87,53 +106,56 @@ export default function NearbyPage() {
 
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-theme(spacing.14))] md:h-screen">
+    <div className="relative h-[calc(100vh-theme(spacing.14))] md:h-screen w-full">
       {/* Sidebar with list of places */}
-      <div className="w-full md:w-1/3 lg:w-1/4 h-1/2 md:h-full flex flex-col">
-        <Card className="flex-1 flex flex-col rounded-none md:rounded-r-none border-0 md:border-r">
+      <div className="absolute top-0 left-0 z-10 w-full md:w-1/3 lg:w-1/4 h-1/3 md:h-full p-4">
+        <Card className="h-full flex flex-col bg-background/80 backdrop-blur-sm">
             <CardHeader>
-            <CardTitle className="font-headline">Nearby Services</CardTitle>
-            <CardDescription>Hospitals & Pharmacies near you</CardDescription>
+              <CardTitle className="font-headline">Nearby Services</CardTitle>
+              <CardDescription>Hospitals & Pharmacies near you</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 overflow-y-auto">
-            {loading && (
-                <div className="space-y-4">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                </div>
-            )}
-            {error && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-            {!loading && !error && (
-                <div className="space-y-2">
-                {places.map((place) => (
-                    <div 
-                    key={place.id}
-                    className="p-3 rounded-lg hover:bg-muted cursor-pointer"
-                    onClick={() => {
-                        setSelectedPlace(place);
-                        setViewport(v => ({ ...v, longitude: place.geometry.coordinates[0], latitude: place.geometry.coordinates[1], zoom: 14 }));
-                    }}
-                    >
-                    <div className="flex items-center gap-3">
-                        {place.type === 'hospital' ? <Hospital className="h-5 w-5 text-destructive" /> : <Stethoscope className="h-5 w-5 text-primary" />}
-                        <div>
-                        <h3 className="font-semibold">{place.properties.name}</h3>
-                        <p className="text-sm text-muted-foreground">{place.properties.address || 'Address not available'}</p>
+              {loading && (
+                  <div className="space-y-4">
+                    {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 w-full" />)}
+                  </div>
+              )}
+              {error && <Alert variant="destructive"><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+              {!loading && !error && (
+                  <div className="space-y-2">
+                  {places.map((place) => (
+                      <div 
+                        key={place.id}
+                        className="p-3 rounded-lg hover:bg-muted cursor-pointer"
+                        onClick={() => {
+                            setSelectedPlace(place);
+                            mapRef.current?.flyTo({ center: [place.geometry.coordinates[0], place.geometry.coordinates[1]], zoom: 15 });
+                        }}
+                      >
+                        <div className="flex gap-4">
+                            {place.type === 'hospital' ? <Hospital className="h-6 w-6 text-destructive flex-shrink-0 mt-1" /> : <Stethoscope className="h-6 w-6 text-primary flex-shrink-0 mt-1" />}
+                            <div className="flex-1">
+                              <h3 className="font-semibold">{place.properties.name}</h3>
+                              <p className="text-sm text-muted-foreground">{place.properties.address || 'Address not available'}</p>
+                              <div className="flex items-center gap-1 mt-1">
+                                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />
+                                  <span className="text-sm font-bold">{place.rating}</span>
+                              </div>
+                            </div>
                         </div>
-                    </div>
-                    </div>
-                ))}
-                </div>
-            )}
+                      </div>
+                  ))}
+                  </div>
+              )}
             </CardContent>
         </Card>
       </div>
 
 
       {/* Map */}
-      <div className="flex-1 h-1/2 md:h-full">
+      <div className="absolute inset-0 z-0">
          <Map
+          ref={mapRef}
           {...viewport}
           onMove={evt => setViewport(evt.viewState)}
           mapboxAccessToken={MAPBOX_TOKEN}
@@ -141,7 +163,7 @@ export default function NearbyPage() {
         >
           {location && (
             <Marker longitude={location.longitude} latitude={location.latitude}>
-                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white" />
+                <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white animate-pulse" />
             </Marker>
           )}
           {places.map(place => (
@@ -164,7 +186,8 @@ export default function NearbyPage() {
               latitude={selectedPlace.geometry.coordinates[1]}
               onClose={() => setSelectedPlace(null)}
               closeOnClick={false}
-              anchor="top"
+              anchor="bottom"
+              offset={30}
             >
               <div>
                 <h3 className="font-bold">{selectedPlace.properties.name}</h3>
@@ -186,3 +209,5 @@ export default function NearbyPage() {
     </div>
   );
 }
+
+    
