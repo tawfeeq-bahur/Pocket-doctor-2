@@ -1,13 +1,13 @@
-# PillPal: Project Report
+# Pocket Doctor: Project Report
 
-This document contains the detailed content for a project presentation on the PillPal application.
+This document contains the detailed content for a project presentation on the Pocket Doctor application.
 
 ---
 
 ### **Slide 2: Introduction**
 
 *   **Brief Description of the Project**
-    PillPal is a modern, AI-enhanced web application designed to help users manage their medications effectively. It provides a centralized dashboard for tracking schedules, an intelligent guide for medication information, and an AI assistant to answer health-related questions, simplifying the complexity of healthcare management.
+    Pocket Doctor is a modern, AI-enhanced web application designed to help users manage their medications effectively. It provides a centralized dashboard for tracking schedules, an intelligent guide for medication information, and an AI assistant to answer health-related questions, simplifying the complexity of healthcare management.
 
 *   **Problem Statement**
     Managing multiple medications can be challenging, especially for individuals with chronic conditions or complex treatment plans. Forgetting to take medication, taking the wrong dose, or lacking clear information about a drug can lead to poor health outcomes and increased medical costs.
@@ -20,7 +20,7 @@ This document contains the detailed content for a project presentation on the Pi
 ### **Slide 3: Objectives**
 
 *   **Main Aim of the Project**
-    The main aim of PillPal is to create an intuitive and comprehensive digital assistant that helps users manage their medication schedules and health information with confidence and ease.
+    The main aim of Pocket Doctor is to create an intuitive and comprehensive digital assistant that helps users manage their medication schedules and health information with confidence and ease.
 
 *   **Specific Goals**
     *   To allow users to create and manage a personalized medication schedule.
@@ -31,7 +31,7 @@ This document contains the detailed content for a project presentation on the Pi
     *   To ensure the application has a clean, responsive, and modern UI with both light and dark themes.
 
 *   **How It Benefits the End User**
-    PillPal helps users stay organized, reduces the stress of managing medications, provides instant access to trustworthy information, and offers insights into their adherence patterns, ultimately leading to better health and greater peace of mind.
+    Pocket Doctor helps users stay organized, reduces the stress of managing medications, provides instant access to trustworthy information, and offers insights into their adherence patterns, ultimately leading to better health and greater peace of mind.
 
 ---
 
@@ -54,7 +54,7 @@ This document contains the detailed content for a project presentation on the Pi
 ### **Slide 5: Proposed System**
 
 *   **Your Solution to the Problem**
-    PillPal is a web-based, all-in-one solution that integrates medication scheduling, adherence tracking, an AI-powered medication guide, and a conversational AI assistant into a single, seamless platform.
+    Pocket Doctor is a web-based, all-in-one solution that integrates medication scheduling, adherence tracking, an AI-powered medication guide, and a conversational AI assistant into a single, seamless platform.
 
 *   **Advantages Over Existing System**
     *   **Unified Experience:** Combines reminders, information, and AI support in one place.
@@ -168,7 +168,7 @@ This document contains the detailed content for a project presentation on the Pi
 
 *   **DFD Level 0 (Context Diagram)**
     ```
-    [ User ] <--> [ 0. PillPal System ] <--> [ Google AI ]
+    [ User ] <--> [ 0. Pocket Doctor System ] <--> [ Google AI ]
     ```
 
 *   **DFD Level 1 (Example: AI Medication Guide)**
@@ -265,10 +265,10 @@ This document contains the detailed content for a project presentation on the Pi
 ### **Slide 18: Conclusion**
 
 *   **Summary of Work Done**
-    This project successfully developed "PillPal," a modern, AI-driven web application for medication management. We implemented core features including a medication dashboard, an AI guide, an AI assistant, and a user profile page. The application features a clean, responsive design with full theming support.
+    This project successfully developed "Pocket Doctor," a modern, AI-driven web application for medication management. We implemented core features including a medication dashboard, an AI guide, an AI assistant, and a user profile page. The application features a clean, responsive design with full theming support.
 
 *   **Final Thoughts on Project Impact**
-    PillPal demonstrates the powerful potential of combining user-centric design with cutting-edge AI to solve real-world health challenges. It serves as a strong foundation for a comprehensive digital health platform that can significantly improve the quality of life for users who need to manage complex medication regimens.
+    Pocket Doctor demonstrates the powerful potential of combining user-centric design with cutting-edge AI to solve real-world health challenges. It serves as a strong foundation for a comprehensive digital health platform that can significantly improve the quality of life for users who need to manage complex medication regimens.
 
 ---
 
@@ -283,3 +283,6 @@ This document contains the detailed content for a project presentation on the Pi
     *   Google AI & Gemini Models: [https://ai.google/](https://ai.google/)
     *   Genkit: [https://firebase.google.com/docs/genkit](https://firebase.google.com/docs/genkit)
     *   Lucide Icons: [https://lucide.dev/](https://lucide.dev/)
+
+
+    
