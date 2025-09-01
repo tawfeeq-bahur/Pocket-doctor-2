@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, Bell, BookUser, LifeBuoy } from "lucide-react";
+import { Bot, LayoutDashboard, Pill, Settings, User, Bell, BookUser, LifeBuoy, ScanLine } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -26,6 +26,7 @@ import { ThemeToggle } from "./ThemeToggle";
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
+  { href: "/scanner", label: "Prescription Scanner", icon: ScanLine },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },
