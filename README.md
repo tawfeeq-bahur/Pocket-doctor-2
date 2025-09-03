@@ -1,4 +1,4 @@
-# Pocket Doctor
+# Pocket Doctor --
 
 Pocket Doctor is a modern, AI-enhanced web application designed to help users manage their medications effectively. It provides a centralized dashboard for tracking schedules, an intelligent guide for medication information, and an AI assistant to answer health-related questions, simplifying the complexity of healthcare management.
 
