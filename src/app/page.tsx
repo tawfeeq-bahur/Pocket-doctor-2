@@ -2,7 +2,6 @@
 "use client";
 
 import { useSharedState } from "@/components/AppLayout";
-import LoginPage from "@/app/login/page";
 import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
 import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
 import { LoaderCircle } from "lucide-react";
@@ -13,11 +12,7 @@ import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 
 export default function DashboardPage() {
-  const { user, patientData, updateDoseStatus, deleteMedication, isAuthenticated } = useSharedState();
-
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
+  const { user, patientData, updateDoseStatus, deleteMedication } = useSharedState();
   
   if (!user) {
     return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;

@@ -24,6 +24,7 @@ import type { AppUser, Medication, EmergencyContact, UserRole, Patient } from "@
 import { ThemeToggle } from "./ThemeToggle";
 import { Separator } from "./ui/separator";
 import { MOCK_USERS, MOCK_PATIENTS } from "@/lib/mock-data";
+import { LoaderCircle } from "lucide-react";
 
 const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -73,6 +74,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // This effect runs when the user logs in or when the list of all patients changes.
@@ -104,7 +106,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     setPatientData(null);
-    router.push('/login');
+    // The redirect is now handled in the AppLayout's useEffect
   };
   
   const updatePatientData = (updatedPatient: Patient) => {
@@ -210,7 +212,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <SharedStateContext.Provider value={value}>
-      {children}
+      <AppLayout>{children}</AppLayout>
     </SharedStateContext.Provider>
   );
 };
@@ -218,18 +220,34 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { user, isAuthenticated, logout, patientData } = useSharedState();
 
-  // If the user is not authenticated, render the children which will be handled by the page.
+  useEffect(() => {
+    if (!isAuthenticated && pathname !== '/login') {
+      router.push('/login');
+    }
+  }, [isAuthenticated, pathname, router]);
+
+  // If the user is not authenticated and not on the login page, show a loader while redirecting.
+  if (!isAuthenticated && pathname !== '/login') {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCircle className="animate-spin h-8 w-8"/>
+      </div>
+    );
+  }
+  
+  // If not authenticated but on the login page, render the login page.
   if (!isAuthenticated) {
      return <>{children}</>;
   }
   
+  // From here, we know the user is authenticated.
   if (!user) {
-    return null; // or a loading spinner
+    return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;
   }
 
-  // From here, we know the user is authenticated.
   let userDetails = user;
   let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
   

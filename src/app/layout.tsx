@@ -3,7 +3,7 @@ import type {Metadata} from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { AppLayout, SharedStateProvider } from '@/components/AppLayout';
+import { SharedStateProvider } from '@/components/AppLayout';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Suspense } from 'react';
 
@@ -33,9 +33,7 @@ export default function RootLayout({
         >
           <Suspense>
             <SharedStateProvider>
-              <AppLayout>
-                {children}
-              </AppLayout>
+              {children}
             </SharedStateProvider>
           </Suspense>
           <Toaster />
