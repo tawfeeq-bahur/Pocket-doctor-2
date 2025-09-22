@@ -283,6 +283,3 @@ This document contains the detailed content for a project presentation on the Po
     *   Google AI & Gemini Models: [https://ai.google/](https://ai.google/)
     *   Genkit: [https://firebase.google.com/docs/genkit](https://firebase.google.com/docs/genkit)
     *   Lucide Icons: [https://lucide.dev/](https://lucide.dev/)
-
-
-    

@@ -1,4 +1,4 @@
-# Pocket Doctor --
+# Pocket Doctor
 
 Pocket Doctor is a modern, AI-enhanced web application designed to help users manage their medications effectively. It provides a centralized dashboard for tracking schedules, an intelligent guide for medication information, and an AI assistant to answer health-related questions, simplifying the complexity of healthcare management.
 
@@ -34,11 +34,3 @@ Pocket Doctor is a modern, AI-enhanced web application designed to help users ma
 *   **Responsive:** The layout adapts smoothly to all screen sizes, from mobile phones to desktops.
 *   **User-Centric:** Focuses on clarity and ease of use, with clear calls-to-action and intuitive navigation.
 *   **Dark Mode:** Includes a fully-supported dark theme to reduce eye strain and cater to user preferences.
-
----
-
-### Credits
-
-**Developed by:** Tawfeeq Bahur
-*   **Email:** tawfeeqbahur@gmail.com
-*   **LinkedIn:** https://www.linkedin.com/in/tawfeeqb/
