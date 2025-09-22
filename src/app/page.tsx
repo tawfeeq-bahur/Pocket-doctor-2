@@ -7,9 +7,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Pill, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
 
 export default function DashboardPage() {
-  const { medications, updateDoseStatus, deleteMedication } = useSharedState();
+  const { medications, updateDoseStatus, deleteMedication, role } = useSharedState();
+
+  if (role === 'doctor' || role === 'caretaker') {
+    return <DoctorDashboard />;
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine } from "lucide-react";
+import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -19,11 +19,13 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import type { Medication, EmergencyContact } from "@/lib/types";
+import type { Medication, EmergencyContact, UserRole } from "@/lib/types";
 import { subDays } from "date-fns";
 import { ThemeToggle } from "./ThemeToggle";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { Label } from "./ui/label";
 
-const menuItems = [
+const patientMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
   { href: "/scanner", label: "Prescription Scanner", icon: ScanLine },
@@ -31,6 +33,16 @@ const menuItems = [
   { href: "/reports", label: "Reports", icon: FileText },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },
+];
+
+const doctorMenuItems = [
+  { href: "/doctor/dashboard", label: "Doctor Dashboard", icon: Stethoscope },
+  { href: "/doctor/patients", label: "Patients", icon: Users },
+];
+
+const caretakerMenuItems = [
+    { href: "/", label: "Patient Dashboard", icon: LayoutDashboard },
+    { href: "/reports", label: "Patient Reports", icon: FileText },
 ];
 
 const mockContacts: EmergencyContact[] = [
@@ -48,6 +60,8 @@ interface SharedState {
   contacts: EmergencyContact[];
   addContact: (contact: EmergencyContact) => void;
   removeContact: (contactId: string) => void;
+  role: UserRole;
+  setRole: (role: UserRole) => void;
 }
 
 // Create the context
@@ -101,6 +115,7 @@ const initialMedications: Medication[] = [
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [medications, setMedications] = useState<Medication[]>(initialMedications);
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+  const [role, setRole] = useState<UserRole>('patient');
 
   const addMedication = (medication: Omit<Medication, "id" | "doses">) => {
     const newMedication: Medication = {
@@ -148,6 +163,8 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     contacts,
     addContact,
     removeContact,
+    role,
+    setRole
   };
 
   return (
@@ -160,6 +177,19 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { role, setRole } = useSharedState();
+
+  const menuItems = {
+      patient: patientMenuItems,
+      doctor: doctorMenuItems,
+      caretaker: caretakerMenuItems
+  }[role];
+
+  const userDetails = {
+    patient: { name: 'John Doe', email: 'user@pocketdoc.com', avatar: 'https://placehold.co/40x40.png', fallback: 'JD' },
+    doctor: { name: 'Dr. Smith', email: 'dr.smith@clinic.com', avatar: 'https://placehold.co/40x40.png', fallback: 'DS' },
+    caretaker: { name: 'Jane Doe', email: 'jane.d@family.com', avatar: 'https://placehold.co/40x40.png', fallback: 'JD' },
+  }[role];
 
   return (
     <SidebarProvider>
@@ -179,6 +209,19 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </SidebarHeader>
               <SidebarContent>
+                <div className="px-2 mb-2">
+                    <Label htmlFor="role-switcher" className="text-xs text-muted-foreground px-2">Viewing as</Label>
+                    <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
+                        <SelectTrigger id="role-switcher" className="h-9 mt-1">
+                            <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="patient">Patient</SelectItem>
+                            <SelectItem value="doctor">Doctor</SelectItem>
+                            <SelectItem value="caretaker">Caretaker</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
@@ -202,12 +245,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <SidebarFooter>
                 <div className="flex items-center gap-3">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src="https://placehold.co/40x40.png" alt="User" data-ai-hint="person portrait" />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarImage src={userDetails.avatar} alt={userDetails.name} data-ai-hint="person portrait" />
+                    <AvatarFallback>{userDetails.fallback}</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <span className="text-sm font-medium">User</span>
-                    <span className="text-xs text-muted-foreground">user@pocketdoc.com</span>
+                    <span className="text-sm font-medium">{userDetails.name}</span>
+                    <span className="text-xs text-muted-foreground">{userDetails.email}</span>
                   </div>
                 </div>
               </SidebarFooter>

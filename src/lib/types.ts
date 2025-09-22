@@ -19,7 +19,7 @@ export type ChatMessage = {
 };
 
 export type EmergencyContact = {
-  id: string;
+  id:string;
   name: string;
   phone: string;
   initials: string;
@@ -31,3 +31,5 @@ export type Reminder = {
   time: string;
   status: 'pending' | 'snoozed';
 };
+
+export type UserRole = 'patient' | 'doctor' | 'caretaker';
