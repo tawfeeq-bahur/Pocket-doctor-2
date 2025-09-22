@@ -25,31 +25,22 @@ import { ThemeToggle } from "./ThemeToggle";
 import { Separator } from "./ui/separator";
 import { MOCK_USERS, MOCK_PATIENTS } from "@/lib/mock-data";
 
-const patientMenuItems = [
+const menuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
   { href: "/scanner", label: "Prescription Scanner", icon: ScanLine },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/reports", label: "Reports", icon: FileText },
+  { href: "/doctor/patients", label: "Patients", icon: Users },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },
-];
-
-const doctorMenuItems = [
-  { href: "/doctor/dashboard", label: "Doctor Dashboard", icon: Stethoscope },
-  { href: "/doctor/patients", label: "Patients", icon: Users },
-];
-
-const caretakerMenuItems = [
-    { href: "/", label: "Patient Dashboard", icon: MonitorSmartphone },
-    { href: "/reports", label: "Patient Reports", icon: FileText },
 ];
 
 // Define the shape of the shared state
 interface SharedState {
   isAuthenticated: boolean;
   user: AppUser | null;
-  login: (userId: string, role: UserRole) => void;
+  login: (userId: string) => void;
   logout: () => void;
   
   // Patient-specific state
@@ -219,12 +210,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated || !user) {
      return <>{children}</>;
   }
-
-  const menuItems = {
-      patient: patientMenuItems,
-      doctor: doctorMenuItems,
-      caretaker: caretakerMenuItems
-  }[user.role];
 
   let userDetails = user;
   let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
