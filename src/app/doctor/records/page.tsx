@@ -10,7 +10,7 @@ export default function PatientRecordsPage() {
                     Patient Records
                 </h1>
                 <p className="text-muted-foreground">
-                    Access and manage comprehensive patient records.
+                    Full medical file with notes, history, and documents.
                 </p>
             </div>
              <Card>

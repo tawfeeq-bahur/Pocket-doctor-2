@@ -10,7 +10,7 @@ export default function MessagesPage() {
                     Messages
                 </h1>
                 <p className="text-muted-foreground">
-                    Communicate with patients and caretakers.
+                    Secure chat with patients and caretakers.
                 </p>
             </div>
              <Card>

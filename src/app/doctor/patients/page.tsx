@@ -26,7 +26,7 @@ export default function PatientsPage() {
                     Patient Management
                 </h1>
                 <p className="text-muted-foreground">
-                    View and manage your list of patients.
+                    Find and open any patient’s profile quickly.
                 </p>
             </div>
              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">

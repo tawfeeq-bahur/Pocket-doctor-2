@@ -10,7 +10,7 @@ export default function LabsPage() {
                     Labs & Imaging
                 </h1>
                 <p className="text-muted-foreground">
-                    View and manage patient lab results and imaging reports.
+                    View test results and scan reports.
                 </p>
             </div>
              <Card>

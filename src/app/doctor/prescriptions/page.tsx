@@ -10,7 +10,7 @@ export default function PrescriptionsPage() {
                     Prescriptions
                 </h1>
                 <p className="text-muted-foreground">
-                    Manage and issue new prescriptions for your patients.
+                    Create, change, or refill patient medicines.
                 </p>
             </div>
              <Card>

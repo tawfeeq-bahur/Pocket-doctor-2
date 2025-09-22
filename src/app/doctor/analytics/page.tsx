@@ -10,7 +10,7 @@ export default function PopulationAnalyticsPage() {
                     Population Analytics
                 </h1>
                 <p className="text-muted-foreground">
-                    View analytics across your entire patient population.
+                    See trends and high-risk patient groups.
                 </p>
             </div>
              <Card>

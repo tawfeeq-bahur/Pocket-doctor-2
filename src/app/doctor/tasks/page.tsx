@@ -10,7 +10,7 @@ export default function TasksPage() {
                     Tasks & Alerts
                 </h1>
                 <p className="text-muted-foreground">
-                    Review important tasks and patient alerts.
+                    All to-dos and urgent notifications in one place.
                 </p>
             </div>
              <Card>
