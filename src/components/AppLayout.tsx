@@ -4,7 +4,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope, LogOut, MonitorSmartphone } from "lucide-react";
 import {
   SidebarProvider,
@@ -72,6 +72,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // This effect runs when the user logs in or when the list of all patients changes.
@@ -95,6 +96,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     if (selectedUser) {
       setUser(selectedUser);
       setIsAuthenticated(true);
+      router.push('/');
     }
   };
 
@@ -102,6 +104,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     setPatientData(null);
+    router.push('/login');
   };
   
   const updatePatientData = (updatedPatient: Patient) => {
@@ -217,9 +220,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, patientData } = useSharedState();
 
-  // If the user is not authenticated, just render the children (which will be the LoginPage)
-  if (!isAuthenticated || !user) {
+  // If the user is not authenticated, render the children which will be handled by the page.
+  if (!isAuthenticated) {
      return <>{children}</>;
+  }
+  
+  if (!user) {
+    return null; // or a loading spinner
   }
 
   // From here, we know the user is authenticated.
@@ -308,4 +315,3 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
