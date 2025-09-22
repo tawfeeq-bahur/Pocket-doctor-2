@@ -30,7 +30,6 @@ import {
   FileText,
   Scan,
   Bot,
-  UserPlus,
   User,
   MessageSquare,
   CreditCard,
@@ -63,6 +62,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { Separator } from './ui/separator';
 import { MOCK_USERS, MOCK_PATIENTS } from '@/lib/mock-data';
 import { LoaderCircle } from 'lucide-react';
+import LoginPage from '@/app/login/page';
 
 // PATIENT
 const patientMenuItems = [
@@ -94,8 +94,7 @@ const caretakerMenuItems = [
   { href: '/guide', label: 'Proxy Scheduling', icon: FileText },
   { href: '/appointments', label: 'Document Vault', icon: Notebook },
   { href: '/reports', label: 'Observation Logs', icon: FolderKanban },
-  { href: '/scanner', label: 'Permission Manager', icon: Notebook },
-  { href: '/settings', label: 'Profile', icon: UserCog },
+  { href: '/scanner', label: 'Permission Manager', icon: UserCog },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
@@ -113,7 +112,7 @@ const getMenuItems = (role: UserRole) => {
 
 interface SharedState {
   isAuthenticated: boolean;
-  user?: AppUser | null; // Can be undefined during initial load
+  user?: AppUser | null;
   login: (userId: string) => void;
   logout: () => void;
 
@@ -163,12 +162,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
   
   const isAuthenticated = user !== null && user !== undefined;
-  
-  // Hooks need to be called at the top level
   const router = useRouter();
 
   useEffect(() => {
-    // This effect runs when the user logs in or when the list of all patients changes.
     if (user?.role === 'patient') {
       const currentPatient = allPatients.find((p) => p.id === user.id);
       setPatientData(currentPatient || null);
@@ -351,7 +347,6 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     setAllPatients((prev) => [...prev, newPatient]);
     setAllUsers((prev) => [...prev, newPatient]);
     
-    // If a caretaker was assigned, link them to the new patient
     if (patientInfo.caretakerId) {
       const caretaker = allUsers.find(u => u.id === patientInfo.caretakerId) as Caretaker;
       if (caretaker) {
@@ -388,20 +383,18 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isAuthenticated, logout, patientData } = useSharedState();
+  const { user, isAuthenticated, logout, patientData, login, allUsers } = useSharedState();
 
   useEffect(() => {
     if (!isAuthenticated && pathname !== '/login') {
       router.replace('/login');
     }
   }, [isAuthenticated, pathname, router]);
-
-  // Conditional returns must happen AFTER all hooks are called.
-  if (pathname === '/login') {
-    return <>{children}</>;
-  }
-
+  
   if (!isAuthenticated) {
+     if (pathname === '/login') {
+      return <LoginPage allUsers={allUsers} onLogin={login} />;
+    }
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -523,5 +516,3 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    

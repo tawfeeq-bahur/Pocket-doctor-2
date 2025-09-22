@@ -2,20 +2,22 @@
 
 'use client';
 
-import { useState } from 'react';
-import { useSharedState } from '@/components/AppLayout';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pill, LogIn } from 'lucide-react';
-import { MOCK_USERS } from '@/lib/mock-data';
-import type { UserRole } from '@/lib/types';
+import type { UserRole, AppUser } from '@/lib/types';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
-export default function LoginPage() {
-  const { login } = useSharedState();
+type LoginPageProps = {
+    allUsers: AppUser[];
+    onLogin: (userId: string) => void;
+};
+
+export default function LoginPage({ allUsers, onLogin }: LoginPageProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [password, setPassword] = useState('');
@@ -32,10 +34,12 @@ export default function LoginPage() {
         return;
     }
     setError('');
-    login(selectedUserId);
+    onLogin(selectedUserId);
   };
   
-  const usersForRole = MOCK_USERS.filter(u => u.role === selectedRole);
+  const usersForRole = useMemo(() => {
+    return allUsers.filter(u => u.role === selectedRole);
+  }, [allUsers, selectedRole]);
   
   const handleRoleChange = (role: UserRole) => {
       setSelectedRole(role);
@@ -109,4 +113,3 @@ export default function LoginPage() {
     </main>
   );
 }
-
