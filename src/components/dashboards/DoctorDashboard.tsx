@@ -16,7 +16,7 @@ export default function DoctorDashboard() {
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    Schedule & Triage
+                    Doctor Dashboard
                 </h1>
                 <p className="text-muted-foreground">
                     An overview of your schedule, patient metrics and activities.

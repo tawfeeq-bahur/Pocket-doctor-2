@@ -77,7 +77,8 @@ const patientMenuItems = [
 
 // DOCTOR
 const doctorMenuItems = [
-  { href: '/doctor/dashboard', label: 'Schedule & Triage', icon: Notebook },
+  { href: '/doctor/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/doctor/appointments', label: 'Appointments', icon: CalendarClock },
   { href: '/doctor/patients', label: 'Patient 360°', icon: Users },
   { href: '/doctor/prescriptions', label: 'Notes & Orders', icon: Notebook },
   { href: '/doctor/labs', label: 'Inbox', icon: FolderKanban },
@@ -373,34 +374,28 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     addPatient,
   };
 
+  if (user === undefined) {
+     return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
+  }
+
   return (
     <SharedStateContext.Provider value={value}>
-      <AppLayout>{children}</AppLayout>
+        {!isAuthenticated ? (
+            <LoginPage allUsers={allUsers} onLogin={login} />
+        ) : (
+            <AppLayout>{children}</AppLayout>
+        )}
     </SharedStateContext.Provider>
   );
 };
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, isAuthenticated, logout, patientData, login, allUsers } = useSharedState();
-
-  useEffect(() => {
-    if (!isAuthenticated && pathname !== '/login') {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, pathname, router]);
-  
-  if (!isAuthenticated) {
-     if (pathname === '/login') {
-      return <LoginPage allUsers={allUsers} onLogin={login} />;
-    }
-    return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
-    );
-  }
+  const { user, logout, patientData } = useSharedState();
 
   if (!user) {
     return (
