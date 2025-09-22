@@ -1,28 +1,91 @@
+
 'use client';
 
 import { useSharedState } from "@/components/AppLayout";
-import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
-import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
 import PatientDashboard from "@/components/dashboards/PatientDashboard";
+import { useMemo } from "react";
+import { differenceInDays } from "date-fns";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { CalendarClock, Pill } from "lucide-react";
+import { LoaderCircle } from 'lucide-react';
+
 
 export default function Home() {
-  const { user } = useSharedState();
+  const { user, patientData } = useSharedState();
+
+  const appointmentDays = useMemo(() => {
+    if (!patientData?.appointments.next) return null;
+    const days = differenceInDays(new Date(patientData.appointments.next), new Date());
+    return days > 0 ? days : 0;
+  }, [patientData]);
 
   if (!user) {
-    // This case is handled by AppLayout, which will redirect to /login
-    return null; 
+    return (
+        <div className="flex h-screen w-full items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+    );
   }
 
-  // Based on the logged-in user's role, render the appropriate dashboard.
-  switch (user.role) {
-    case 'doctor':
+  if (user.role === 'doctor') {
       return <DoctorDashboard />;
-    case 'caretaker':
-      return <CaretakerDashboard />;
-    case 'patient':
-      return <PatientDashboard />;
-    default:
-      // Fallback in case of an unknown role.
-      return <div className="p-4">Unknown user role.</div>;
   }
+  
+  if (user.role === 'caretaker') {
+      return <CaretakerDashboard />;
+  }
+
+  if (user.role === 'patient') {
+     if (!patientData) {
+        return (
+            <div className="flex h-full w-full items-center justify-center">
+                <LoaderCircle className="h-8 w-8 animate-spin" />
+            </div>
+        );
+    }
+    return (
+        <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+            <div className="space-y-2">
+                <h1 className="text-3xl font-bold tracking-tight font-headline">
+                    Patient Dashboard
+                </h1>
+                <p className="text-muted-foreground">
+                    A summary of your upcoming appointments and medications.
+                </p>
+            </div>
+             <div className="grid gap-4 md:grid-cols-2">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Next Appointment</CardTitle>
+                        <CalendarClock className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        {appointmentDays !== null ? (
+                            <>
+                                <div className="text-2xl font-bold">In {appointmentDays} day(s)</div>
+                                <p className="text-xs text-muted-foreground">with your primary doctor</p>
+                            </>
+                        ) : (
+                            <div className="text-2xl font-bold">No upcoming appointments</div>
+                        )}
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">Active Medications</CardTitle>
+                        <Pill className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{patientData.medications.length}</div>
+                        <p className="text-xs text-muted-foreground">currently in your schedule</p>
+                    </CardContent>
+                </Card>
+             </div>
+            <PatientDashboard />
+        </div>
+    );
+  }
+
+  return <div className="p-4">Unknown user role.</div>;
 }
+
