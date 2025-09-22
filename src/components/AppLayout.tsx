@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -14,7 +15,6 @@ import {
   LayoutDashboard,
   HeartPulse,
   Pill,
-  MessageSquare,
   BarChart,
   User,
   Settings,
@@ -31,6 +31,7 @@ import {
   FileText,
   Scan,
   Bot,
+  UserPlus,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -52,6 +53,7 @@ import type {
   EmergencyContact,
   UserRole,
   Patient,
+  Caretaker,
 } from '@/lib/types';
 import { ThemeToggle } from './ThemeToggle';
 import { Separator } from './ui/separator';
@@ -135,7 +137,8 @@ interface SharedState {
       | 'emergencyContacts'
       | 'medicalHistory'
       | 'avatar'
-    >
+      | 'caretakerId'
+    > & { caretakerId?: string }
   ) => void;
 }
 
@@ -154,9 +157,11 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [allUsers, setAllUsers] = useState<AppUser[]>(MOCK_USERS);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
-  const router = useRouter();
-
+  
   const isAuthenticated = user !== null && user !== undefined;
+  
+  // Hooks need to be called at the top level
+  const router = useRouter();
 
   useEffect(() => {
     // This effect runs when the user logs in or when the list of all patients changes.
@@ -192,6 +197,15 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const updatePatientData = (updatedPatient: Patient) => {
     setAllPatients((prev) =>
       prev.map((p) => (p.id === updatedPatient.id ? updatedPatient : p))
+    );
+     setAllUsers((prev) =>
+      prev.map((u) => (u.id === updatedPatient.id ? updatedPatient : u))
+    );
+  };
+  
+   const updateCaretakerData = (updatedCaretaker: Caretaker) => {
+    setAllUsers((prev) =>
+      prev.map((u) => (u.id === updatedCaretaker.id ? updatedCaretaker : u))
     );
   };
 
@@ -279,6 +293,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       if (patientToLink && user?.role === 'caretaker') {
         const updatedCaretaker = { ...user, patientId: patientToLink.id };
         setUser(updatedCaretaker as AppUser);
+        updateCaretakerData(updatedCaretaker as Caretaker);
 
         const updatedPatient = { ...patientToLink, caretakerId: user.id };
         updatePatientData(updatedPatient);
@@ -302,7 +317,8 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       | 'emergencyContacts'
       | 'medicalHistory'
       | 'avatar'
-    >
+      | 'caretakerId'
+    > & { caretakerId?: string }
   ) => {
     const newId = `user-patient-${Date.now()}`;
     const nameParts = patientInfo.name.split(' ');
@@ -325,10 +341,20 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
         chronicConditions: 'None',
       },
       avatar: `https://i.pravatar.cc/150?u=${newId}`,
+      caretakerId: patientInfo.caretakerId || undefined,
     };
 
     setAllPatients((prev) => [...prev, newPatient]);
     setAllUsers((prev) => [...prev, newPatient]);
+    
+    // If a caretaker was assigned, link them to the new patient
+    if (patientInfo.caretakerId) {
+      const caretaker = allUsers.find(u => u.id === patientInfo.caretakerId) as Caretaker;
+      if (caretaker) {
+        const updatedCaretaker = { ...caretaker, patientId: newId };
+        updateCaretakerData(updatedCaretaker);
+      }
+    }
   };
 
   const value: SharedState = {
@@ -357,8 +383,8 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, isAuthenticated, logout, patientData } = useSharedState();
   const router = useRouter();
+  const { user, isAuthenticated, logout, patientData } = useSharedState();
 
   useEffect(() => {
     if (!isAuthenticated && pathname !== '/login') {
@@ -366,15 +392,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router]);
 
-  if (!isAuthenticated) {
-    if (pathname === '/login') {
-      return <>{children}</>;
-    }
+
+  if (!isAuthenticated && pathname !== '/login') {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <LoaderCircle className="h-8 w-8 animate-spin" />
-      </div>
+        <div className="flex h-screen w-full items-center justify-center">
+            <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
     );
+  }
+
+  if (pathname === '/login') {
+      return <>{children}</>;
   }
 
   if (!user) {

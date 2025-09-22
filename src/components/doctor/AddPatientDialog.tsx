@@ -28,22 +28,29 @@ import type { Patient } from "@/lib/types";
 import { format, addDays } from 'date-fns';
 import { useSharedState } from "../AppLayout";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { useMemo } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email." }),
   appointmentDate: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
+  caretakerId: z.string().optional(),
 });
 
 type AddPatientDialogProps = {
   children: React.ReactNode;
-  onAddPatient: (patient: Omit<Patient, "id" | "fallback" | "patientCode" | "role" | "medications" | "emergencyContacts" | "medicalHistory" | "avatar">) => void;
+  onAddPatient: (patient: Omit<Patient, "id" | "fallback" | "patientCode" | "role" | "medications" | "emergencyContacts" | "medicalHistory" | "avatar" | "caretakerId"> & { caretakerId?: string }) => void;
 };
 
 export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const { user } = useSharedState();
+  const { user, allUsers } = useSharedState();
   const { toast } = useToast();
+
+  const availableCaretakers = useMemo(() => {
+    return allUsers.filter(u => u.role === 'caretaker' && !u.patientId);
+  }, [allUsers]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,6 +58,7 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
       name: "",
       email: "",
       appointmentDate: format(addDays(new Date(), 14), 'yyyy-MM-dd'),
+      caretakerId: "",
     },
   });
 
@@ -70,7 +78,8 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
         doctorId: user.id,
         appointments: {
             next: values.appointmentDate
-        }
+        },
+        caretakerId: values.caretakerId,
     });
 
     toast({
@@ -133,6 +142,29 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
                     </FormItem>
                 )}
             />
+             <FormField
+                  control={form.control}
+                  name="caretakerId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Assign Caretaker (Optional)</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select an available caretaker" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="">None</SelectItem>
+                            {availableCaretakers.map(caretaker => (
+                                <SelectItem key={caretaker.id} value={caretaker.id}>{caretaker.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
             <DialogFooter>
               <Button type="submit">Add Patient</Button>
             </DialogFooter>
