@@ -17,7 +17,7 @@ type LoginPageProps = {
     onLogin: (userId: string) => void;
 };
 
-export default function LoginPage({ allUsers, onLogin }: LoginPageProps) {
+export default function LoginPage({ allUsers = [], onLogin }: LoginPageProps) {
   const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
   const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [password, setPassword] = useState('');
