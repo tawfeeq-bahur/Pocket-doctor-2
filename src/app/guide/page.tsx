@@ -26,7 +26,7 @@ export default function GuidePage() {
   const [guide, setGuide] = useState<MedicationGuideOutput | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { medications, addMedication, updateDoseStatus, deleteMedication } = useSharedState();
+  const { patientData, addMedication, updateDoseStatus, deleteMedication } = useSharedState();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -141,11 +141,13 @@ export default function GuidePage() {
               My Medication Schedule
             </h2>
             <div className="mt-4">
-               <MedicationList 
-                  medications={medications} 
-                  onUpdateDose={updateDoseStatus} 
-                  onDeleteMedication={deleteMedication} 
-                />
+               {patientData && (
+                 <MedicationList 
+                    medications={patientData.medications} 
+                    onUpdateDose={updateDoseStatus} 
+                    onDeleteMedication={deleteMedication} 
+                  />
+               )}
             </div>
         </div>
 
