@@ -28,9 +28,12 @@ export default function DashboardPage() {
   }
 
   if (user.role === 'caretaker') {
+    // If caretaker is not linked to a patient yet, show the linking dashboard.
+    // patientData will be null in this case based on the logic in AppLayout.
     if (!patientData) {
       return <CaretakerDashboard />;
     }
+    // If linked, show the patient's data.
      return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             <div className="flex items-center justify-between space-y-2">
@@ -94,5 +97,7 @@ export default function DashboardPage() {
     );
   }
   
+  // Fallback for any unhandled cases or while data is loading.
   return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>
 }
+

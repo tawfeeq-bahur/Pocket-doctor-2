@@ -74,13 +74,17 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [patientData, setPatientData] = useState<Patient | null>(null);
 
   useEffect(() => {
+    // This effect runs when the user logs in or when the list of all patients changes.
+    // It finds the correct patient data based on the user's role.
     if (user?.role === 'patient') {
       const currentPatient = allPatients.find(p => p.id === user.id);
       setPatientData(currentPatient || null);
     } else if (user?.role === 'caretaker') {
+       // If the caretaker has a linked patientId, find that patient's data.
        const linkedPatient = allPatients.find(p => p.id === user.patientId);
        setPatientData(linkedPatient || null);
     } else {
+      // For doctors or unlinked caretakers, there is no specific patient data to show.
       setPatientData(null);
     }
   }, [user, allPatients]);
@@ -97,9 +101,12 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    setPatientData(null);
   };
   
   const updatePatientData = (updatedPatient: Patient) => {
+    // This function updates a patient's data in the central `allPatients` state.
+    // This ensures that any changes (like adding a medication) are reflected everywhere.
     setAllPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
   };
   
@@ -165,15 +172,18 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   
   const linkCaretakerToPatient = useCallback((patientCode: string): boolean => {
     const patientToLink = allPatients.find(p => p.patientCode === patientCode);
+    
+    // Check if a patient with the code exists and if the current user is a caretaker
     if (patientToLink && user?.role === 'caretaker') {
-      // Link patient to caretaker
+      // 1. Link patient to caretaker in the user object
       const updatedCaretaker = { ...user, patientId: patientToLink.id };
       setUser(updatedCaretaker as AppUser);
       
-      // Link caretaker to patient
+      // 2. Link caretaker to patient in the patient object
       const updatedPatient = { ...patientToLink, caretakerId: user.id };
       updatePatientData(updatedPatient);
 
+      // 3. Set the currently viewed patient data for the caretaker
       setPatientData(updatedPatient);
       return true;
     }
@@ -207,12 +217,16 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, patientData } = useSharedState();
 
+  // If the user is not authenticated, just render the children (which will be the LoginPage)
   if (!isAuthenticated || !user) {
      return <>{children}</>;
   }
 
+  // From here, we know the user is authenticated.
   let userDetails = user;
   let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
+  
+  // If the user is a caretaker and is linked to a patient, update their display info.
   if (user.role === 'caretaker' && patientData) {
       userDetails = {
           ...user,
@@ -294,3 +308,4 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
