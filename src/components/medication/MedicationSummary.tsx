@@ -1,14 +1,19 @@
 
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, AreaChart, Area, CartesianGrid } from 'recharts';
-import { CheckCircle, XCircle, Bell, Pill, CalendarDays } from 'lucide-react';
+import { CheckCircle, XCircle, Bell, Pill, CalendarDays, Share2, Download, User } from 'lucide-react';
 import type { Medication } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { Progress } from '@/components/ui/progress';
 import { differenceInDays, subDays, format } from 'date-fns';
+import { Button } from '../ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { useSharedState } from '../AppLayout';
+import { Avatar, AvatarFallback } from '../ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 
 type MedicationSummaryProps = {
   medications: Medication[];
@@ -32,6 +37,9 @@ const generateHistoricalData = () => {
 
 
 export function MedicationSummary({ medications }: MedicationSummaryProps) {
+  const { contacts } = useSharedState();
+  const { toast } = useToast();
+  
   const { overallSummary, medicationDetails, durationData, historicalAdherence } = useMemo(() => {
     let taken = 0;
     let skipped = 0;
@@ -50,7 +58,7 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
       skipped += medSkipped;
       pending += medPending;
       const totalDoses = medTaken + medSkipped + medPending;
-      const adherence = totalDoses > 0 ? (medTaken / totalDoses) * 100 : 0;
+      const adherence = totalDoses > 0 ? (medTaken / (medTaken + medSkipped)) * 100 : 0;
       return {
         id: med.id,
         name: med.name,
@@ -81,6 +89,27 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
     days: { label: "Days Taken", color: "hsl(var(--primary))" },
   };
 
+  const handleShare = (contactPhone: string) => {
+    const reportSummary = `Hi! Here is the medication adherence report from Pocket Doctor:
+- *Doses Taken Today:* ${overallSummary.taken}
+- *Doses Skipped Today:* ${overallSummary.skipped}
+
+*Per-Medication Adherence (Today):*
+${medicationDetails.map(med => `- ${med.name}: ${med.adherence}%`).join('\n')}
+
+This is an automated report.`;
+
+    const whatsappUrl = `https://wa.me/${contactPhone.replace(/\D/g, '')}?text=${encodeURIComponent(reportSummary)}`;
+    window.open(whatsappUrl, '_blank');
+  };
+
+  const handleExport = () => {
+    toast({
+      title: "Feature Coming Soon!",
+      description: "Exporting reports to PDF/Excel will be available in a future update.",
+    });
+  }
+
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6">
@@ -106,6 +135,62 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
            <p className="text-xs text-muted-foreground">
             out of {overallSummary.total} total doses today
           </p>
+        </CardContent>
+      </Card>
+
+       <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
+        <CardHeader>
+          <CardTitle>Adherence Actions</CardTitle>
+          <CardDescription>Share or export your adherence report.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center gap-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="flex-1">
+                <Share2 className="mr-2 h-4 w-4" /> Share Report
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <h4 className="font-medium leading-none">Share with Contact</h4>
+                  <p className="text-sm text-muted-foreground">
+                    Select a contact to share the report via WhatsApp.
+                  </p>
+                </div>
+                {contacts.length > 0 ? (
+                   <div className="grid gap-2">
+                    {contacts.map((contact) => (
+                      <div 
+                        key={contact.id} 
+                        className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer"
+                        onClick={() => handleShare(contact.phone)}
+                      >
+                         <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarFallback className="bg-primary text-primary-foreground">{contact.initials}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className="font-medium">{contact.name}</p>
+                                <p className="text-sm text-muted-foreground">{contact.phone}</p>
+                            </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-4">
+                     <User className="mx-auto h-8 w-8" />
+                     <p className="mt-2 text-sm">No emergency contacts found. Please add one in Settings.</p>
+                  </div>
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Button variant="outline" className="flex-1" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" /> Export
+          </Button>
         </CardContent>
       </Card>
       
@@ -220,3 +305,5 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
     </div>
   );
 }
+
+    

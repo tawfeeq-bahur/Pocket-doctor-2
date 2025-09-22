@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useSharedState } from "../AppLayout";
 
 
 const mockContacts: EmergencyContact[] = [
@@ -26,25 +27,26 @@ const mockContacts: EmergencyContact[] = [
 
 
 export function EmergencyContacts() {
-    const [contacts, setContacts] = useState<EmergencyContact[]>([]);
+    const { contacts, addContact, removeContact } = useSharedState();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { toast } = useToast();
 
-    const addContact = (contact: EmergencyContact) => {
-        if (!contacts.find(c => c.id === contact.id)) {
-            setContacts(prev => [...prev, contact]);
-            toast({
-                title: "Contact Added",
-                description: `${contact.name} has been added to your emergency contacts.`,
-            })
-        } else {
-             toast({
-                title: "Contact Already Added",
-                description: `${contact.name} is already in your emergency contacts.`,
-                variant: "destructive"
-            })
-        }
+    const handleAddContact = (contact: EmergencyContact) => {
+        addContact(contact);
+        toast({
+            title: "Contact Added",
+            description: `${contact.name} has been added to your emergency contacts.`,
+        });
         setIsDialogOpen(false);
+    }
+    
+    const handleRemoveContact = (contactId: string) => {
+        removeContact(contactId);
+        toast({
+            title: "Contact Removed",
+            description: `The contact has been removed from your emergency contacts.`,
+            variant: "destructive"
+        })
     }
 
   return (
@@ -53,7 +55,7 @@ export function EmergencyContacts() {
         <div>
           <CardTitle>Emergency Contacts</CardTitle>
           <CardDescription>
-            Notify these contacts if you miss a dose.
+            These contacts can be used to share your adherence reports.
           </CardDescription>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -82,7 +84,14 @@ export function EmergencyContacts() {
                                     <p className="text-sm text-muted-foreground">{contact.phone}</p>
                                 </div>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => addContact(contact)}>Add</Button>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                onClick={() => handleAddContact(contact)}
+                                disabled={!!contacts.find(c => c.id === contact.id)}
+                            >
+                                {contacts.find(c => c.id === contact.id) ? 'Added' : 'Add'}
+                            </Button>
                         </div>
                     ))}
                 </div>
@@ -106,7 +115,7 @@ export function EmergencyContacts() {
                                 </p>
                             </div>
                         </div>
-                        <Button variant="ghost" size="sm" onClick={() => setContacts(prev => prev.filter(c => c.id !== contact.id))}>Remove</Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleRemoveContact(contact.id)}>Remove</Button>
                     </div>
                 ))}
             </div>

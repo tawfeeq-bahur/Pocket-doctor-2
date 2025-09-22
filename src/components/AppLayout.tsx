@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import type { Medication } from "@/lib/types";
+import type { Medication, EmergencyContact } from "@/lib/types";
 import { subDays } from "date-fns";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -32,12 +32,21 @@ const menuItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
+const mockContacts: EmergencyContact[] = [
+    { id: '1', name: 'Jane Doe', phone: '555-123-4567', initials: 'JD'},
+    { id: '2', name: 'John Smith', phone: '555-987-6543', initials: 'JS'},
+    { id: '3', name: 'Mom', phone: '555-555-5555', initials: 'M'},
+];
+
 // Define the shape of the shared state
 interface SharedState {
   medications: Medication[];
   addMedication: (medication: Omit<Medication, "id" | "doses">) => void;
   updateDoseStatus: (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => void;
   deleteMedication: (medicationId: string) => void;
+  contacts: EmergencyContact[];
+  addContact: (contact: EmergencyContact) => void;
+  removeContact: (contactId: string) => void;
 }
 
 // Create the context
@@ -90,6 +99,7 @@ const initialMedications: Medication[] = [
 // Create the provider component
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [medications, setMedications] = useState<Medication[]>(initialMedications);
+  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
 
   const addMedication = (medication: Omit<Medication, "id" | "doses">) => {
     const newMedication: Medication = {
@@ -117,6 +127,16 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const deleteMedication = (medicationId: string) => {
     setMedications(prev => prev.filter(med => med.id !== medicationId));
   };
+  
+  const addContact = (contact: EmergencyContact) => {
+     if (!contacts.find(c => c.id === contact.id)) {
+        setContacts(prev => [...prev, contact]);
+     }
+  }
+
+  const removeContact = (contactId: string) => {
+    setContacts(prev => prev.filter(c => c.id !== contactId));
+  };
 
 
   const value = {
@@ -124,6 +144,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     addMedication,
     updateDoseStatus,
     deleteMedication,
+    contacts,
+    addContact,
+    removeContact,
   };
 
   return (
@@ -202,3 +225,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
