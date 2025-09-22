@@ -5,9 +5,10 @@ import { useSharedState } from "@/components/AppLayout";
 import { MedicationList } from "@/components/medication/MedicationList";
 import { MedicationSummary } from "@/components/medication/MedicationSummary";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pill, PlusCircle } from "lucide-react";
+import { Pill, PlusCircle, Trophy } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import { AchievementCard } from "@/components/gamification/AchievementCard";
 
 export default function DashboardPage() {
   const { medications, updateDoseStatus, deleteMedication } = useSharedState();
@@ -53,6 +54,10 @@ export default function DashboardPage() {
         </div>
 
         <div className="lg:col-span-1 space-y-6">
+            <h2 className="text-2xl font-bold tracking-tight font-headline mb-4">
+              Achievements
+            </h2>
+            <AchievementCard />
             <h2 className="text-2xl font-bold tracking-tight font-headline mb-4">
               Adherence Overview
             </h2>
