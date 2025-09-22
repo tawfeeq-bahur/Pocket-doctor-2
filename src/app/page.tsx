@@ -8,9 +8,14 @@ import { Pill, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
+import LoginPage from "@/app/login/page";
 
 export default function DashboardPage() {
-  const { medications, updateDoseStatus, deleteMedication, role } = useSharedState();
+  const { medications, updateDoseStatus, deleteMedication, role, isAuthenticated } = useSharedState();
+
+  if (!isAuthenticated) {
+    return <LoginPage />;
+  }
 
   if (role === 'doctor' || role === 'caretaker') {
     return <DoctorDashboard />;

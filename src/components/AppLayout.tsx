@@ -4,7 +4,7 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope } from "lucide-react";
+import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope, LogOut } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -22,8 +22,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import type { Medication, EmergencyContact, UserRole } from "@/lib/types";
 import { subDays } from "date-fns";
 import { ThemeToggle } from "./ThemeToggle";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Label } from "./ui/label";
+import { Separator } from "./ui/separator";
 
 const patientMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -45,14 +44,11 @@ const caretakerMenuItems = [
     { href: "/reports", label: "Patient Reports", icon: FileText },
 ];
 
-const mockContacts: EmergencyContact[] = [
-    { id: '1', name: 'Jane Doe', phone: '555-123-4567', initials: 'JD'},
-    { id: '2', name: 'John Smith', phone: '555-987-6543', initials: 'JS'},
-    { id: '3', name: 'Mom', phone: '555-555-5555', initials: 'M'},
-];
-
 // Define the shape of the shared state
 interface SharedState {
+  isAuthenticated: boolean;
+  login: (role: UserRole) => void;
+  logout: () => void;
   medications: Medication[];
   addMedication: (medication: Omit<Medication, "id" | "doses">) => void;
   updateDoseStatus: (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => void;
@@ -113,9 +109,21 @@ const initialMedications: Medication[] = [
 
 // Create the provider component
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [medications, setMedications] = useState<Medication[]>(initialMedications);
   const [contacts, setContacts] = useState<EmergencyContact[]>([]);
   const [role, setRole] = useState<UserRole>('patient');
+
+  const login = (selectedRole: UserRole) => {
+    setRole(selectedRole);
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    // Optionally reset role to default
+    setRole('patient');
+  };
 
   const addMedication = (medication: Omit<Medication, "id" | "doses">) => {
     const newMedication: Medication = {
@@ -156,6 +164,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 
   const value = {
+    isAuthenticated,
+    login,
+    logout,
     medications,
     addMedication,
     updateDoseStatus,
@@ -177,7 +188,11 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, setRole } = useSharedState();
+  const { role, isAuthenticated, logout } = useSharedState();
+
+  if (!isAuthenticated) {
+     return <>{children}</>;
+  }
 
   const menuItems = {
       patient: patientMenuItems,
@@ -190,6 +205,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     doctor: { name: 'Dr. Smith', email: 'dr.smith@clinic.com', avatar: 'https://placehold.co/40x40.png', fallback: 'DS' },
     caretaker: { name: 'Jane Doe', email: 'jane.d@family.com', avatar: 'https://placehold.co/40x40.png', fallback: 'JD' },
   }[role];
+
+  const currentRoleName = role.charAt(0).toUpperCase() + role.slice(1);
 
   return (
     <SidebarProvider>
@@ -209,19 +226,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </div>
               </SidebarHeader>
               <SidebarContent>
-                <div className="px-2 mb-2">
-                    <Label htmlFor="role-switcher" className="text-xs text-muted-foreground px-2">Viewing as</Label>
-                    <Select value={role} onValueChange={(value) => setRole(value as UserRole)}>
-                        <SelectTrigger id="role-switcher" className="h-9 mt-1">
-                            <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="patient">Patient</SelectItem>
-                            <SelectItem value="doctor">Doctor</SelectItem>
-                            <SelectItem value="caretaker">Caretaker</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
                 <SidebarMenu>
                   {menuItems.map((item) => (
                     <SidebarMenuItem key={item.href}>
@@ -243,15 +247,22 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                 </SidebarMenu>
               </SidebarContent>
               <SidebarFooter>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={userDetails.avatar} alt={userDetails.name} data-ai-hint="person portrait" />
-                    <AvatarFallback>{userDetails.fallback}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{userDetails.name}</span>
-                    <span className="text-xs text-muted-foreground">{userDetails.email}</span>
-                  </div>
+                 <Separator className="my-2 bg-sidebar-border" />
+                 <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={userDetails.avatar} alt={userDetails.name} data-ai-hint="person portrait" />
+                        <AvatarFallback>{userDetails.fallback}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{userDetails.name}</span>
+                        <span className="text-xs text-muted-foreground">{currentRoleName} View</span>
+                      </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={logout}>
+                        <LogOut className="h-4 w-4"/>
+                        <span className="sr-only">Logout</span>
+                    </Button>
                 </div>
               </SidebarFooter>
             </Sidebar>
