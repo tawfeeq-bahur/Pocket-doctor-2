@@ -6,8 +6,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, HeartPulse, CalendarClock, Pill, MessageSquare, Video, CreditCard, Clipboard, 
-  BookUser, Settings, LogOut, Stethoscope, Users, Notebook, FolderKanban, BarChart2, Bell,
-  ShieldQuestion, UserCog, User
+  BookUser, Settings, LogOut, Stethoscope, Users, Notebook, FolderKanban, BarChart2,
+  ShieldQuestion, UserCog, User, Home, FileText
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -44,21 +44,21 @@ const patientMenuItems = [
 
 // DOCTOR
 const doctorMenuItems = [
-  { href: "/doctor/dashboard", label: "Schedule & Triage", icon: CalendarClock },
-  { href: "/doctor/patients", label: "Patient 360°", icon: Users },
-  { href: "/doctor/prescriptions", label: "Notes & Orders", icon: Notebook },
-  { href: "/doctor/labs", label: "Inbox", icon: FolderKanban },
-  { href: "/doctor/messages", label: "Telemedicine", icon: Video },
-  { href: "/doctor/records", label: "Care Plans", icon: HeartPulse },
-  { href: "/doctor/analytics", label: "Analytics", icon: BarChart2 },
-  { href: "/doctor/tasks", label: "Permissions", icon: ShieldQuestion },
-  { href: "/profile", label: "Profile", icon: Stethoscope },
+    { href: "/doctor/dashboard", label: "Schedule & Triage", icon: CalendarClock },
+    { href: "/doctor/patients", label: "Patient 360°", icon: Users },
+    { href: "/doctor/prescriptions", label: "Notes & Orders", icon: Notebook },
+    { href: "/doctor/labs", label: "Inbox", icon: FolderKanban },
+    { href: "/doctor/messages", label: "Telemedicine", icon: Video },
+    { href: "/doctor/records", label: "Care Plans", icon: HeartPulse },
+    { href: "/doctor/analytics", label: "Analytics", icon: BarChart2 },
+    { href: "/doctor/permissions", label: "Permissions", icon: ShieldQuestion },
+    { href: "/profile", label: "Profile", icon: Stethoscope },
 ];
 
 // CARETAKER
 const caretakerMenuItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/guide", label: "Taskboard", icon: Clipboard },
+  { href: "/", label: "Dashboard", icon: Home },
+  { href: "/guide", label: "Taskboard", icon: FileText },
   { href: "/appointments", label: "Proxy Scheduling", icon: CalendarClock },
   { href: "/reports", label: "Document Vault", icon: FolderKanban },
   { href: "/scanner", label: "Observation Logs", icon: Notebook },
@@ -253,26 +253,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (user === null && pathname !== '/login') {
+    // This is the single source of truth for redirection.
+    // If not authenticated and not on the login page, redirect to login.
+    if (!isAuthenticated && pathname !== '/login') {
       router.replace('/login');
     }
-  }, [user, pathname, router]);
+  }, [isAuthenticated, pathname, router]);
 
-  if (!isAuthenticated && pathname !== '/login') {
-     useEffect(() => {
-      router.replace('/login');
-    }, [router]);
+  // If we are not authenticated, we either render the login page
+  // or a loader while we are being redirected.
+  if (!isAuthenticated) {
+    if (pathname === '/login') {
+      return <>{children}</>;
+    }
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-
-  if (!isAuthenticated) {
-     return <>{children}</>;
-  }
-
+  
+  // If authenticated, but user object is not yet available, show a loader.
   if (!user) {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -367,5 +368,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
 
     
