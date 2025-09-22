@@ -340,7 +340,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
         allergies: 'None',
         chronicConditions: 'None',
       },
-      avatar: `https://i.pravatar.cc/150?u=${newId}`,
+      avatar: '',
       caretakerId: patientInfo.caretakerId || undefined,
     };
 
