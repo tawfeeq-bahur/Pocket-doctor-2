@@ -7,15 +7,15 @@ export default function LabsPage() {
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
              <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    Labs & Imaging
+                    Inbox
                 </h1>
                 <p className="text-muted-foreground">
-                    View test results and scan reports.
+                    Lab result sign-off, refill approvals, message routing, and task assignments to staff.
                 </p>
             </div>
              <Card>
                 <CardHeader>
-                    <CardTitle>Coming Soon</CardTitle>
+                    <CardTitle>Unified Inbox</CardTitle>
                     <CardDescription>This page is under construction.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-96">
@@ -24,7 +24,7 @@ export default function LabsPage() {
                     </div>
                     <h3 className="text-xl font-semibold">Lab & Imaging Results</h3>
                     <p className="text-muted-foreground max-w-sm">
-                        Patient lab results and imaging reports will be available here.
+                        Patient lab results, imaging reports, and refill requests will appear here for your review and sign-off.
                     </p>
                 </CardContent>
              </Card>

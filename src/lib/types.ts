@@ -1,5 +1,4 @@
 
-
 export type Medication = {
   id: string;
   name: string;
@@ -24,13 +23,6 @@ export type EmergencyContact = {
   name: string;
   phone: string;
   initials: string;
-};
-
-export type Reminder = {
-  id: string;
-  medicationName: string;
-  time: string;
-  status: 'pending' | 'snoozed';
 };
 
 export type UserRole = 'patient' | 'doctor' | 'caretaker';

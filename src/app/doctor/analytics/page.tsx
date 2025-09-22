@@ -10,21 +10,21 @@ export default function PopulationAnalyticsPage() {
                     Population Analytics
                 </h1>
                 <p className="text-muted-foreground">
-                    See trends and high-risk patient groups.
+                    See trends, gaps in care, and high-risk patient groups.
                 </p>
             </div>
              <Card>
                 <CardHeader>
-                    <CardTitle>Coming Soon</CardTitle>
-                    <CardDescription>This page is under construction.</CardDescription>
+                    <CardTitle>Panel Management</CardTitle>
+                    <CardDescription>Chronic conditions, gaps in care, and quality metrics.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-96">
                     <div className="p-4 bg-primary/10 rounded-full">
                         <PieChart className="w-12 h-12 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold">Population Analytics</h3>
+                    <h3 className="text-xl font-semibold">Analytics Dashboard</h3>
                     <p className="text-muted-foreground max-w-sm">
-                        Insights and trends from your patient data will be displayed here.
+                        Insights and trends from your patient data will be displayed here, helping you manage panel health.
                     </p>
                 </CardContent>
              </Card>

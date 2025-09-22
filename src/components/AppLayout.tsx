@@ -1,14 +1,13 @@
 
-
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
-  Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, 
-  Users, Stethoscope, LogOut, MonitorSmartphone, AlertCircle, ClipboardList, Beaker, 
-  PieChart, MessageSquare, FolderArchive 
+  LayoutDashboard, HeartPulse, CalendarClock, Pill, MessageSquare, Video, CreditCard, Clipboard, 
+  BookUser, Settings, LogOut, Stethoscope, Users, Notebook, FolderKanban, BarChart2, Bell,
+  ShieldQuestion, UserCog
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -30,36 +29,41 @@ import { Separator } from "./ui/separator";
 import { MOCK_USERS, MOCK_PATIENTS } from "@/lib/mock-data";
 import { LoaderCircle } from "lucide-react";
 
+// PATIENT
 const patientMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
-  { href: "/scanner", label: "Prescription Scanner", icon: ScanLine },
-  { href: "/assistant", label: "AI Assistant", icon: Bot },
-  { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/profile", label: "Profile", icon: BookUser },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/guide", label: "Health Records", icon: HeartPulse },
+  { href: "/appointments", label: "Appointments", icon: CalendarClock },
+  { href: "/prescriptions", label: "E-Prescriptions", icon: Pill },
+  { href: "/reports", label: "Messaging & Telehealth", icon: MessageSquare },
+  { href: "/billing", label: "Billing & Payments", icon: CreditCard },
+  { href: "/scanner", label: "Forms & Intake", icon: Clipboard },
+  { href: "/settings", label: "Education Hub", icon: BookUser },
+  { href: "/profile", label: "Accessibility & UX", icon: UserCog },
 ];
 
+// DOCTOR
 const doctorMenuItems = [
-  { href: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/doctor/tasks", label: "Tasks & Alerts", icon: AlertCircle },
-  { href: "/doctor/prescriptions", label: "Prescriptions", icon: ClipboardList },
-  { href: "/doctor/labs", label: "Labs & Imaging", icon: Beaker },
-  { href: "/doctor/patients", label: "Patients", icon: Users },
-  { href: "/doctor/analytics", label: "Population Analytics", icon: PieChart },
-  { href: "/doctor/messages", label: "Messages", icon: MessageSquare },
-  { href: "/doctor/records", label: "Patient Records", icon: FolderArchive },
+  { href: "/doctor/dashboard", label: "Schedule & Triage", icon: CalendarClock },
+  { href: "/doctor/patients", label: "Patient 360°", icon: Users },
+  { href: "/doctor/prescriptions", label: "Notes & Orders", icon: Notebook },
+  { href: "/doctor/labs", label: "Inbox", icon: FolderKanban },
+  { href: "/doctor/messages", label: "Telemedicine", icon: Video },
+  { href: "/doctor/records", label: "Care Plans", icon: HeartPulse },
+  { href: "/doctor/analytics", label: "Analytics", icon: BarChart2 },
+  { href: "/doctor/tasks", label: "Permissions", icon: ShieldQuestion },
   { href: "/profile", label: "Profile", icon: Stethoscope },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-
+// CARETAKER
 const caretakerMenuItems = [
-  { href: "/", label: "Dashboard", icon: MonitorSmartphone },
-  { href: "/reports", label: "Patient Reports", icon: FileText },
-  { href: "/assistant", label: "AI Assistant", icon: Bot },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/guide", label: "Taskboard", icon: Clipboard },
+  { href: "/appointments", label: "Proxy Scheduling", icon: CalendarClock },
+  { href: "/reports", label: "Document Vault", icon: FolderKanban },
+  { href: "/scanner", label: "Observation Logs", icon: Notebook },
+  { href: "/settings", label: "Permission Manager", icon: UserCog },
   { href: "/profile", label: "Profile", icon: User },
-  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 
@@ -75,14 +79,12 @@ const getMenuItems = (role: UserRole) => {
   }
 }
 
-// Define the shape of the shared state
 interface SharedState {
   isAuthenticated: boolean;
-  user: AppUser | null;
+  user?: AppUser | null; // Can be undefined during initial load
   login: (userId: string) => void;
   logout: () => void;
   
-  // Patient-specific state
   patientData: Patient | null,
   addMedication: (medication: Omit<Medication, "id" | "doses">) => void;
   updateDoseStatus: (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => void;
@@ -92,10 +94,8 @@ interface SharedState {
   linkCaretakerToPatient: (patientCode: string) => boolean;
 }
 
-// Create the context
 const SharedStateContext = createContext<SharedState | undefined>(undefined);
 
-// Create a custom hook to use the shared state
 export const useSharedState = () => {
   const context = useContext(SharedStateContext);
   if (!context) {
@@ -104,28 +104,23 @@ export const useSharedState = () => {
   return context;
 };
 
-
-// Create the provider component
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState<AppUser | null>(null);
+  const [user, setUser] = useState<AppUser | null | undefined>(undefined);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const router = useRouter();
-  const pathname = usePathname();
+  
+  const isAuthenticated = user !== null && user !== undefined;
 
   useEffect(() => {
     // This effect runs when the user logs in or when the list of all patients changes.
-    // It finds the correct patient data based on the user's role.
     if (user?.role === 'patient') {
       const currentPatient = allPatients.find(p => p.id === user.id);
       setPatientData(currentPatient || null);
     } else if (user?.role === 'caretaker') {
-       // If the caretaker has a linked patientId, find that patient's data.
        const linkedPatient = allPatients.find(p => p.id === user.patientId);
        setPatientData(linkedPatient || null);
     } else {
-      // For doctors or unlinked caretakers, there is no specific patient data to show.
       setPatientData(null);
     }
   }, [user, allPatients]);
@@ -135,32 +130,21 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     const selectedUser = MOCK_USERS.find(u => u.id === userId);
     if (selectedUser) {
       setUser(selectedUser);
-      setIsAuthenticated(true);
-      
-      // Redirect based on role
-      switch (selectedUser.role) {
-        case 'doctor':
-          router.push('/doctor/dashboard');
-          break;
-        case 'patient':
-        case 'caretaker':
-        default:
-           router.push('/');
-           break;
+      if (selectedUser.role === 'doctor') {
+        router.push('/doctor/dashboard');
+      } else {
+        router.push('/');
       }
     }
   };
 
   const logout = () => {
-    setIsAuthenticated(false);
     setUser(null);
     setPatientData(null);
     router.push('/login');
   };
   
   const updatePatientData = (updatedPatient: Patient) => {
-    // This function updates a patient's data in the central `allPatients` state.
-    // This ensures that any changes (like adding a medication) are reflected everywhere.
     setAllPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
   };
   
@@ -227,17 +211,13 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const linkCaretakerToPatient = useCallback((patientCode: string): boolean => {
     const patientToLink = allPatients.find(p => p.patientCode === patientCode);
     
-    // Check if a patient with the code exists and if the current user is a caretaker
     if (patientToLink && user?.role === 'caretaker') {
-      // 1. Link patient to caretaker in the user object
       const updatedCaretaker = { ...user, patientId: patientToLink.id };
       setUser(updatedCaretaker as AppUser);
       
-      // 2. Link caretaker to patient in the patient object
       const updatedPatient = { ...patientToLink, caretakerId: user.id };
       updatePatientData(updatedPatient);
 
-      // 3. Set the currently viewed patient data for the caretaker
       setPatientData(updatedPatient);
       return true;
     }
@@ -269,32 +249,32 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
   const { user, isAuthenticated, logout, patientData } = useSharedState();
 
   useEffect(() => {
-    if (!isAuthenticated && pathname !== '/login') {
-      router.push('/login');
+    if (user === null && pathname !== '/login') {
+      logout();
     }
-  }, [isAuthenticated, pathname, router]);
+  }, [user, pathname, logout]);
 
-  // If the user is not authenticated and not on the login page, show a loader while redirecting.
   if (!isAuthenticated && pathname !== '/login') {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <LoaderCircle className="animate-spin h-8 w-8"/>
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
       </div>
     );
   }
-  
-  // If not authenticated but on the login page, render the login page.
+
   if (!isAuthenticated) {
      return <>{children}</>;
   }
-  
-  // From here, we know the user is authenticated.
+
   if (!user) {
-    return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
   
   const menuItems = getMenuItems(user.role);
@@ -302,7 +282,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   let userDetails = user;
   let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
   
-  // If the user is a caretaker and is linked to a patient, update their display info.
   if (user.role === 'caretaker' && patientData) {
       userDetails = {
           ...user,

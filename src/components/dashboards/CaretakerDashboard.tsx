@@ -9,9 +9,10 @@ import { Label } from '../ui/label';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import { useToast } from '@/hooks/use-toast';
+import PatientDashboard from './PatientDashboard';
 
 export default function CaretakerDashboard() {
-  const { linkCaretakerToPatient } = useSharedState();
+  const { linkCaretakerToPatient, patientData } = useSharedState();
   const [patientCode, setPatientCode] = useState('');
   const [error, setError] = useState('');
   const { toast } = useToast();
@@ -33,6 +34,10 @@ export default function CaretakerDashboard() {
       setError('Invalid patient code. Please check the code and try again.');
     }
   };
+  
+  if (patientData) {
+    return <PatientDashboard />
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">

@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard } from "lucide-react";
 
-export default function AssistantPage() {
+export default function BillingPage() {
   return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="space-y-2">

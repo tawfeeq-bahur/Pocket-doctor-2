@@ -1,30 +1,30 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Video } from "lucide-react";
+import { ShieldQuestion } from "lucide-react";
 
-export default function MessagesPage() {
+export default function PermissionsPage() {
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
              <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    Telemedicine
+                    Permissions
                 </h1>
                 <p className="text-muted-foreground">
-                    Queue, pre-charting, in-visit tools, and auto-generated summaries.
+                    Caregiver link review, consent management, proxy control, and audit trails.
                 </p>
             </div>
              <Card>
                 <CardHeader>
-                    <CardTitle>Telemedicine Workspace</CardTitle>
+                    <CardTitle>Access Management</CardTitle>
                     <CardDescription>This page is under construction.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-96">
                     <div className="p-4 bg-primary/10 rounded-full">
-                        <Video className="w-12 h-12 text-primary" />
+                        <ShieldQuestion className="w-12 h-12 text-primary" />
                     </div>
-                    <h3 className="text-xl font-semibold">Virtual Visits</h3>
+                    <h3 className="text-xl font-semibold">Consent & Proxy Control</h3>
                     <p className="text-muted-foreground max-w-sm">
-                        Manage your virtual visit queue, conduct video calls, and access in-visit tools here.
+                       Review and manage patient consent forms and caregiver access permissions here.
                     </p>
                 </CardContent>
              </Card>

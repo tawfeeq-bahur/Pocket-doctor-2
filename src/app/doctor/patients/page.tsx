@@ -1,12 +1,10 @@
 
-
 'use client';
 
 import { MOCK_PATIENTS, MOCK_USERS } from "@/lib/mock-data";
 import type { Patient, AppUser } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Pill, UserCheck, Calendar, AlertTriangle } from "lucide-react";
 import { useMemo } from "react";
@@ -23,7 +21,7 @@ export default function PatientsPage() {
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
              <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    Patient Management
+                    Patient 360°
                 </h1>
                 <p className="text-muted-foreground">
                     Find and open any patient’s profile quickly.
@@ -52,7 +50,7 @@ function PatientCard({ patient }: { patient: Patient }) {
             });
         });
         const total = taken + skipped;
-        const adherence = total > 0 ? Math.round((taken / total) * 100) : 100; // Assume 100 if no doses logged yet
+        const adherence = total > 0 ? Math.round((taken / total) * 100) : 100;
         return { taken, skipped, adherence };
     }, [patient.medications]);
     
