@@ -3,12 +3,10 @@
 
 import { useSharedState } from "@/components/AppLayout";
 import { MedicationList } from "@/components/medication/MedicationList";
-import { MedicationSummary } from "@/components/medication/MedicationSummary";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pill, PlusCircle, Trophy } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Pill, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
-import { AchievementCard } from "@/components/gamification/AchievementCard";
 
 export default function DashboardPage() {
   const { medications, updateDoseStatus, deleteMedication } = useSharedState();
@@ -21,8 +19,7 @@ export default function DashboardPage() {
         </h1>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div>
           <h2 className="text-2xl font-bold tracking-tight font-headline mb-4">
             Today's Schedule
           </h2>
@@ -33,7 +30,7 @@ export default function DashboardPage() {
               onDeleteMedication={deleteMedication} 
             />
           ) : (
-            <Card className="h-full">
+            <Card>
               <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-60">
                   <div className="p-4 bg-primary/10 rounded-full">
                     <Pill className="w-12 h-12 text-primary" />
@@ -52,18 +49,6 @@ export default function DashboardPage() {
             </Card>
           )}
         </div>
-
-        <div className="lg:col-span-1 space-y-6">
-            <h2 className="text-2xl font-bold tracking-tight font-headline mb-4">
-              Achievements
-            </h2>
-            <AchievementCard />
-            <h2 className="text-2xl font-bold tracking-tight font-headline mb-4">
-              Adherence Overview
-            </h2>
-            <MedicationSummary medications={medications} />
-        </div>
-      </div>
     </div>
   );
 }
