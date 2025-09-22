@@ -1,49 +1,56 @@
-
 'use client';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, Video } from "lucide-react";
+import { MedicationSummary } from "@/components/medication/MedicationSummary";
+import { useSharedState } from "@/components/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { LoaderCircle, PieChart } from "lucide-react";
+import { AchievementCard } from "@/components/gamification/AchievementCard";
 
 export default function ReportsPage() {
+  const { patientData } = useSharedState();
+
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight font-headline">
-          Secure Messaging
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight font-headline">Reports & Adherence</h1>
         <p className="text-muted-foreground">
-          HIPAA-grade chat with the care team, structured templates, and file uploads.
+          View your adherence statistics, track your progress, and share reports.
         </p>
       </div>
 
-       <div className="grid gap-6 md:grid-cols-2">
+       <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {!patientData ? (
+             <Card className="h-full">
+                <CardHeader>
+                    <CardTitle>Medication Summary</CardTitle>
+                    <CardDescription>
+                        A summary of your medication adherence.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center justify-center h-96">
+                   <LoaderCircle className="w-8 h-8 animate-spin" />
+                </CardContent>
+             </Card>
+          ) : patientData.medications.length > 0 ? (
+            <MedicationSummary medications={patientData.medications} />
+          ) : (
             <Card>
                 <CardHeader>
-                    <CardTitle>Chat with Your Care Team</CardTitle>
+                    <CardTitle>Medication Summary</CardTitle>
                 </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-60">
-                     <div className="p-4 bg-primary/10 rounded-full">
-                        <MessageSquare className="w-12 h-12 text-primary" />
-                    </div>
-                    <p className="text-muted-foreground max-w-sm">
-                        A secure chat interface to communicate with your doctor and care team will be here.
-                    </p>
+                 <CardContent className="flex flex-col items-center justify-center h-full text-center py-20">
+                    <PieChart className="w-16 h-16 text-muted-foreground mb-4" />
+                    <h3 className="text-xl font-semibold">No Data Available</h3>
+                    <p className="text-muted-foreground">Add medications to see your adherence reports.</p>
                 </CardContent>
             </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Start a Telehealth Visit</CardTitle>
-                </CardHeader>
-                <CardContent className="flex flex-col items-center justify-center gap-4 text-center h-full min-h-60">
-                     <div className="p-4 bg-primary/10 rounded-full">
-                        <Video className="w-12 h-12 text-primary" />
-                    </div>
-                    <p className="text-muted-foreground max-w-sm">
-                       Join your scheduled video visits, check your device, and view summaries post-call.
-                    </p>
-                </CardContent>
-            </Card>
-       </div>
+          )}
+        </div>
+         <div className="lg:col-span-1">
+          <AchievementCard />
+        </div>
+      </div>
     </div>
   );
 }
