@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useSharedState } from "@/components/AppLayout";
@@ -100,4 +99,3 @@ export default function DashboardPage() {
   // Fallback for any unhandled cases or while data is loading.
   return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>
 }
-
