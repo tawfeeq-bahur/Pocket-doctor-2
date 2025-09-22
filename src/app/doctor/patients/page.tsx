@@ -6,26 +6,44 @@ import type { Patient, AppUser } from "@/lib/types";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
-import { Pill, UserCheck, Calendar, AlertTriangle } from "lucide-react";
+import { Pill, UserCheck, Calendar, AlertTriangle, UserPlus, PlusCircle } from "lucide-react";
 import { useMemo } from "react";
+import { useSharedState } from "@/components/AppLayout";
+import { AddPatientDialog } from "@/components/doctor/AddPatientDialog";
+import { Button } from "@/components/ui/button";
 
 const getCaretaker = (caretakerId?: string): AppUser | undefined => {
     return MOCK_USERS.find(user => user.id === caretakerId);
 };
 
 export default function PatientsPage() {
+    const { user, allPatients, addPatient } = useSharedState();
+
     // In a real app, you would fetch patients for the logged-in doctor.
-    const patients = MOCK_PATIENTS;
+    const patients = useMemo(() => {
+        if (user?.role === 'doctor') {
+            return allPatients.filter(p => p.doctorId === user.id);
+        }
+        return [];
+    }, [user, allPatients]);
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-             <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight font-headline">
-                    Patient 360°
-                </h1>
-                <p className="text-muted-foreground">
-                    Find and open any patient’s profile quickly.
-                </p>
+             <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight font-headline">
+                        Patient 360°
+                    </h1>
+                    <p className="text-muted-foreground">
+                        Find and open any patient’s profile quickly.
+                    </p>
+                </div>
+                 <AddPatientDialog onAddPatient={addPatient}>
+                    <Button>
+                        <UserPlus className="mr-2" />
+                        Add New Patient
+                    </Button>
+                </AddPatientDialog>
             </div>
              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
                 {patients.map(patient => (

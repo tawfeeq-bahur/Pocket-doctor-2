@@ -1,6 +1,6 @@
 
 import type { Patient, Doctor, Caretaker, AppUser } from './types';
-import { subDays } from "date-fns";
+import { subDays, addDays, formatISO } from "date-fns";
 
 const patient1Medications = [
   {
@@ -68,7 +68,7 @@ export const MOCK_PATIENTS: Patient[] = [
         chronicConditions: 'Hypertension, Type 2 Diabetes',
     },
     appointments: {
-        next: '2024-08-15',
+        next: formatISO(addDays(new Date(), 15), { representation: 'date' }),
     }
   },
   {
@@ -87,7 +87,7 @@ export const MOCK_PATIENTS: Patient[] = [
         chronicConditions: 'Asthma',
     },
      appointments: {
-        next: '2024-08-22',
+        next: formatISO(addDays(new Date(), 22), { representation: 'date' }),
     }
   },
 ];

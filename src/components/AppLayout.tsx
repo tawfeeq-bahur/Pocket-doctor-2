@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, HeartPulse, CalendarClock, Pill, MessageSquare, Video, CreditCard, Clipboard, 
   BookUser, Settings, LogOut, Stethoscope, Users, Notebook, FolderKanban, BarChart2,
-  ShieldQuestion, UserCog, User, Home, FileText
+  ShieldQuestion, UserCog, User, Home, FileText, Activity
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -85,6 +85,8 @@ interface SharedState {
   login: (userId: string) => void;
   logout: () => void;
   
+  allUsers: AppUser[],
+  allPatients: Patient[],
   patientData: Patient | null,
   addMedication: (medication: Omit<Medication, "id" | "doses">) => void;
   updateDoseStatus: (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => void;
@@ -92,6 +94,7 @@ interface SharedState {
   addContact: (contact: EmergencyContact) => void;
   removeContact: (contactId: string) => void;
   linkCaretakerToPatient: (patientCode: string) => boolean;
+  addPatient: (patient: Omit<Patient, "id" | "fallback" | "patientCode" | "role" | "medications" | "emergencyContacts" | "medicalHistory" | "avatar">) => void;
 }
 
 const SharedStateContext = createContext<SharedState | undefined>(undefined);
@@ -106,6 +109,7 @@ export const useSharedState = () => {
 
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null | undefined>(undefined);
+  const [allUsers, setAllUsers] = useState<AppUser[]>(MOCK_USERS);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
   const router = useRouter();
@@ -127,7 +131,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 
   const login = (userId: string) => {
-    const selectedUser = MOCK_USERS.find(u => u.id === userId);
+    const selectedUser = allUsers.find(u => u.id === userId);
     if (selectedUser) {
       setUser(selectedUser);
       if (selectedUser.role === 'doctor') {
@@ -224,12 +228,39 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     return false;
   }, [user, allPatients]);
 
+  const addPatient = (patientInfo: Omit<Patient, "id" | "fallback" | "patientCode" | "role" | "medications" | "emergencyContacts" | "medicalHistory" | "avatar">) => {
+    const newId = `user-patient-${Date.now()}`;
+    const nameParts = patientInfo.name.split(' ');
+    const fallback = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
+    const patientCode = `${fallback.toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+
+    const newPatient: Patient = {
+      ...patientInfo,
+      id: newId,
+      role: 'patient',
+      fallback,
+      patientCode,
+      medications: [],
+      emergencyContacts: [],
+      medicalHistory: {
+        allergies: 'None',
+        chronicConditions: 'None',
+      },
+      avatar: `https://i.pravatar.cc/150?u=${newId}`,
+    };
+
+    setAllPatients(prev => [...prev, newPatient]);
+    setAllUsers(prev => [...prev, newPatient]);
+  };
+
 
   const value: SharedState = {
     isAuthenticated,
     user,
     login,
     logout,
+    allUsers,
+    allPatients,
     patientData,
     addMedication,
     updateDoseStatus,
@@ -237,6 +268,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     addContact,
     removeContact,
     linkCaretakerToPatient,
+    addPatient,
   };
 
   return (
@@ -368,7 +400,3 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
-
-    
-
-    

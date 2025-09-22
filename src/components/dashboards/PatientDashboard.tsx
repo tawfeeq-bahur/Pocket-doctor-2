@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Pill, PlusCircle, MessageSquare, CalendarClock, HeartPulse, LoaderCircle } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import { differenceInDays, format, isFuture, parseISO } from "date-fns";
 
 export default function PatientDashboard() {
   const { patientData, updateDoseStatus, deleteMedication } = useSharedState();
@@ -18,6 +19,9 @@ export default function PatientDashboard() {
       </div>
     );
   }
+
+  const nextAppointmentDate = patientData.appointments.next ? parseISO(patientData.appointments.next) : null;
+  const daysUntilAppointment = nextAppointmentDate && isFuture(nextAppointmentDate) ? differenceInDays(nextAppointmentDate, new Date()) : null;
 
   return (
     <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
@@ -31,22 +35,27 @@ export default function PatientDashboard() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <DashboardCard 
-          icon={CalendarClock}
-          title="Upcoming Appointments"
-          value={patientData.appointments.next}
-          link="/appointments"
-        />
+         {daysUntilAppointment !== null && (
+             <DashboardCard 
+              icon={CalendarClock}
+              title="Next Appointment"
+              value={`${daysUntilAppointment} days`}
+              description={`on ${format(nextAppointmentDate!, 'MMM d, yyyy')}`}
+              link="/appointments"
+            />
+         )}
         <DashboardCard 
           icon={HeartPulse}
           title="Recent Labs"
           value="Results pending"
+          description="from your last visit"
           link="/guide"
         />
          <DashboardCard 
           icon={MessageSquare}
           title="New Messages"
           value="1 Unread"
+           description="from Dr. Reed"
           link="/reports"
         />
       </div>
@@ -85,7 +94,7 @@ export default function PatientDashboard() {
   );
 }
 
-const DashboardCard = ({ icon: Icon, title, value, link }: { icon: React.ElementType, title: string, value: string, link: string }) => (
+const DashboardCard = ({ icon: Icon, title, value, description, link }: { icon: React.ElementType, title: string, value: string, description: string, link: string }) => (
   <Card>
     <CardContent className="p-4 flex items-center gap-4">
       <div className="p-3 bg-primary/10 rounded-full">
@@ -94,6 +103,7 @@ const DashboardCard = ({ icon: Icon, title, value, link }: { icon: React.Element
       <div>
         <p className="text-sm text-muted-foreground">{title}</p>
         <p className="text-lg font-semibold">{value}</p>
+        <p className="text-xs text-muted-foreground">{description}</p>
       </div>
        <Button asChild variant="ghost" size="icon" className="ml-auto">
           <Link href={link}>
