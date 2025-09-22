@@ -2,7 +2,6 @@
 "use client";
 
 import { useSharedState } from "@/components/AppLayout";
-import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
 import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
 import { LoaderCircle } from "lucide-react";
 import { MedicationList } from "@/components/medication/MedicationList";
@@ -10,9 +9,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Pill, PlusCircle } from "lucide-react";
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user, patientData, updateDoseStatus, deleteMedication } = useSharedState();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.role === 'doctor') {
+      router.replace('/doctor/dashboard');
+    }
+  }, [user, router]);
   
   if (!user) {
     return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;
@@ -21,7 +29,8 @@ export default function DashboardPage() {
   // ROUTING LOGIC
   switch (user.role) {
     case 'doctor':
-      return <DoctorDashboard />;
+      // This will be handled by the useEffect redirect, but we can show a loader as a fallback.
+      return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;
     case 'caretaker':
        // If caretaker is not linked to a patient yet, show the linking dashboard.
       if (!patientData) {

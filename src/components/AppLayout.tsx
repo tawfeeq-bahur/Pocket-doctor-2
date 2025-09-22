@@ -5,7 +5,11 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope, LogOut, MonitorSmartphone } from "lucide-react";
+import { 
+  Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, 
+  Users, Stethoscope, LogOut, MonitorSmartphone, AlertCircle, ClipboardList, Beaker, 
+  PieChart, MessageSquare, FolderArchive 
+} from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -26,16 +30,50 @@ import { Separator } from "./ui/separator";
 import { MOCK_USERS, MOCK_PATIENTS } from "@/lib/mock-data";
 import { LoaderCircle } from "lucide-react";
 
-const menuItems = [
+const patientMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/guide", label: "Medication Guide", icon: LifeBuoy },
   { href: "/scanner", label: "Prescription Scanner", icon: ScanLine },
   { href: "/assistant", label: "AI Assistant", icon: Bot },
   { href: "/reports", label: "Reports", icon: FileText },
-  { href: "/doctor/patients", label: "Patients", icon: Users },
   { href: "/profile", label: "Profile", icon: BookUser },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
+
+const doctorMenuItems = [
+  { href: "/doctor/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/doctor/tasks", label: "Tasks & Alerts", icon: AlertCircle },
+  { href: "/doctor/prescriptions", label: "Prescriptions", icon: ClipboardList },
+  { href: "/doctor/labs", label: "Labs & Imaging", icon: Beaker },
+  { href: "/doctor/patients", label: "Patients", icon: Users },
+  { href: "/doctor/analytics", label: "Population Analytics", icon: PieChart },
+  { href: "/doctor/messages", label: "Messages", icon: MessageSquare },
+  { href: "/doctor/records", label: "Patient Records", icon: FolderArchive },
+  { href: "/profile", label: "Profile", icon: Stethoscope },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+
+const caretakerMenuItems = [
+  { href: "/", label: "Dashboard", icon: MonitorSmartphone },
+  { href: "/reports", label: "Patient Reports", icon: FileText },
+  { href: "/assistant", label: "AI Assistant", icon: Bot },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/settings", label: "Settings", icon: Settings },
+];
+
+
+const getMenuItems = (role: UserRole) => {
+  switch (role) {
+    case 'doctor':
+      return doctorMenuItems;
+    case 'caretaker':
+      return caretakerMenuItems;
+    case 'patient':
+    default:
+      return patientMenuItems;
+  }
+}
 
 // Define the shape of the shared state
 interface SharedState {
@@ -98,7 +136,18 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     if (selectedUser) {
       setUser(selectedUser);
       setIsAuthenticated(true);
-      router.push('/');
+      
+      // Redirect based on role
+      switch (selectedUser.role) {
+        case 'doctor':
+          router.push('/doctor/dashboard');
+          break;
+        case 'patient':
+        case 'caretaker':
+        default:
+           router.push('/');
+           break;
+      }
     }
   };
 
@@ -106,7 +155,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setUser(null);
     setPatientData(null);
-    // The redirect is now handled in the AppLayout's useEffect
+    router.push('/login');
   };
   
   const updatePatientData = (updatedPatient: Patient) => {
@@ -247,6 +296,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) {
     return <div className="flex items-center justify-center h-screen"><LoaderCircle className="animate-spin h-8 w-8"/></div>;
   }
+  
+  const menuItems = getMenuItems(user.role);
 
   let userDetails = user;
   let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
