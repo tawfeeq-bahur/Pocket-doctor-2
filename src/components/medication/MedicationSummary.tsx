@@ -1,12 +1,13 @@
 
+
 "use client";
 
-import { useMemo, useState } from 'react';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, AreaChart, Area, CartesianGrid } from 'recharts';
-import { CheckCircle, XCircle, Bell, Pill, CalendarDays, Share2, Download, User } from 'lucide-react';
+import { useMemo } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, AreaChart, Area, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { CheckCircle, XCircle, Share2, Download, User, CalendarDays, Pill } from 'lucide-react';
 import type { Medication } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Progress } from '@/components/ui/progress';
 import { differenceInDays, subDays, format } from 'date-fns';
 import { Button } from '../ui/button';
@@ -37,7 +38,7 @@ const generateHistoricalData = () => {
 
 
 export function MedicationSummary({ medications }: MedicationSummaryProps) {
-  const { contacts } = useSharedState();
+  const { patientData } = useSharedState();
   const { toast } = useToast();
   
   const { overallSummary, medicationDetails, durationData, historicalAdherence } = useMemo(() => {
@@ -57,8 +58,8 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
       taken += medTaken;
       skipped += medSkipped;
       pending += medPending;
-      const totalDoses = medTaken + medSkipped + medPending;
-      const adherence = totalDoses > 0 ? (medTaken / (medTaken + medSkipped)) * 100 : 0;
+      const totalDoses = medTaken + medSkipped;
+      const adherence = totalDoses > 0 ? (medTaken / totalDoses) * 100 : 0;
       return {
         id: med.id,
         name: med.name,
@@ -90,11 +91,11 @@ export function MedicationSummary({ medications }: MedicationSummaryProps) {
   };
 
   const handleShare = (contactPhone: string) => {
-    const reportSummary = `Hi! Here is the medication adherence report from Pocket Doctor:
+    const reportSummary = `Hi! Here is the medication adherence report for ${patientData?.name} from Pocket Doctor:
 - *Doses Taken Today:* ${overallSummary.taken}
 - *Doses Skipped Today:* ${overallSummary.skipped}
 
-*Per-Medication Adherence (Today):*
+*Per-Medication Adherence (Overall):*
 ${medicationDetails.map(med => `- ${med.name}: ${med.adherence}%`).join('\n')}
 
 This is an automated report.`;
@@ -115,7 +116,7 @@ This is an automated report.`;
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Doses Taken</CardTitle>
+          <CardTitle className="text-sm font-medium">Doses Taken (Today)</CardTitle>
           <CheckCircle className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
@@ -127,7 +128,7 @@ This is an automated report.`;
       </Card>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Doses Skipped</CardTitle>
+          <CardTitle className="text-sm font-medium">Doses Skipped (Today)</CardTitle>
           <XCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
@@ -158,9 +159,9 @@ This is an automated report.`;
                     Select a contact to share the report via WhatsApp.
                   </p>
                 </div>
-                {contacts.length > 0 ? (
+                {patientData && patientData.emergencyContacts.length > 0 ? (
                    <div className="grid gap-2">
-                    {contacts.map((contact) => (
+                    {patientData.emergencyContacts.map((contact) => (
                       <div 
                         key={contact.id} 
                         className="flex items-center justify-between p-2 rounded-md hover:bg-muted cursor-pointer"
@@ -242,8 +243,8 @@ This is an automated report.`;
 
       <Card className="sm:col-span-2 lg:col-span-1 xl:col-span-2">
         <CardHeader>
-          <CardTitle>Per-Medication Adherence</CardTitle>
-          <CardDescription>Today's adherence percentage for each medication.</CardDescription>
+          <CardTitle>Per-Medication Adherence (Overall)</CardTitle>
+          <CardDescription>Overall adherence percentage for each medication.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {medicationDetails.length > 0 ? (
@@ -305,5 +306,3 @@ This is an automated report.`;
     </div>
   );
 }
-
-    

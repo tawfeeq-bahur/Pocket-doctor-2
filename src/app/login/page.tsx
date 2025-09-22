@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState } from 'react';
@@ -9,26 +10,37 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Pill, LogIn } from 'lucide-react';
+import { MOCK_USERS } from '@/lib/mock-data';
 import type { UserRole } from '@/lib/types';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function LoginPage() {
   const { login } = useSharedState();
-  const [email, setEmail] = useState('');
+  const [selectedRole, setSelectedRole] = useState<UserRole>('patient');
+  const [selectedUserId, setSelectedUserId] = useState<string>('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('patient');
   const [error, setError] = useState('');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) {
-      setError('Please enter both email and password.');
+    if (!selectedUserId) {
+      setError('Please select a user.');
       return;
     }
-    // This is a simulated login. In a real app, you'd validate credentials.
+    if (password !== '123') {
+        setError('Incorrect password. Hint: it is 123.');
+        return;
+    }
     setError('');
-    login(role);
+    login(selectedUserId);
   };
+  
+  const usersForRole = MOCK_USERS.filter(u => u.role === selectedRole);
+  
+  const handleRoleChange = (role: UserRole) => {
+      setSelectedRole(role);
+      setSelectedUserId('');
+  }
 
   return (
     <main className="flex items-center justify-center min-h-screen bg-background p-4">
@@ -42,20 +54,35 @@ export default function LoginPage() {
             <h1 className="text-2xl font-bold font-headline">Pocket Doctor</h1>
           </div>
           <CardTitle>Welcome Back</CardTitle>
-          <CardDescription>Sign in to access your dashboard.</CardDescription>
+          <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="user@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              <Label htmlFor="role">Sign in as</Label>
+              <Select value={selectedRole} onValueChange={(value: UserRole) => handleRoleChange(value)}>
+                <SelectTrigger id="role">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="patient">Patient</SelectItem>
+                  <SelectItem value="doctor">Doctor</SelectItem>
+                  <SelectItem value="caretaker">Caretaker</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="user">User</Label>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled={!selectedRole}>
+                <SelectTrigger id="user">
+                  <SelectValue placeholder="Select a user" />
+                </SelectTrigger>
+                <SelectContent>
+                  {usersForRole.map(user => (
+                     <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -68,19 +95,6 @@ export default function LoginPage() {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="role">Sign in as</Label>
-              <Select value={role} onValueChange={(value: UserRole) => setRole(value)}>
-                <SelectTrigger id="role">
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="patient">Patient</SelectItem>
-                  <SelectItem value="doctor">Doctor</SelectItem>
-                  <SelectItem value="caretaker">Caretaker</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
              {error && <p className="text-sm text-destructive text-center">{error}</p>}
             <Button type="submit" className="w-full">
                 <LogIn className="mr-2" />
@@ -89,9 +103,10 @@ export default function LoginPage() {
           </form>
         </CardContent>
          <CardFooter className="text-center text-xs text-muted-foreground justify-center">
-            <p>This is a simulated login. Any credentials will work.</p>
+            <p>Password is `123` for all users.</p>
         </CardFooter>
       </Card>
     </main>
   );
 }
+

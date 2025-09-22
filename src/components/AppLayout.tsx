@@ -1,10 +1,11 @@
 
+
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope, LogOut } from "lucide-react";
+import { Bot, LayoutDashboard, Pill, Settings, User, FileText, BookUser, LifeBuoy, ScanLine, Users, Stethoscope, LogOut, MonitorSmartphone } from "lucide-react";
 import {
   SidebarProvider,
   Sidebar,
@@ -19,10 +20,10 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import type { Medication, EmergencyContact, UserRole } from "@/lib/types";
-import { subDays } from "date-fns";
+import type { AppUser, Medication, EmergencyContact, UserRole, Patient } from "@/lib/types";
 import { ThemeToggle } from "./ThemeToggle";
 import { Separator } from "./ui/separator";
+import { MOCK_USERS, MOCK_PATIENTS } from "@/lib/mock-data";
 
 const patientMenuItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -40,24 +41,25 @@ const doctorMenuItems = [
 ];
 
 const caretakerMenuItems = [
-    { href: "/", label: "Patient Dashboard", icon: LayoutDashboard },
+    { href: "/", label: "Patient Dashboard", icon: MonitorSmartphone },
     { href: "/reports", label: "Patient Reports", icon: FileText },
 ];
 
 // Define the shape of the shared state
 interface SharedState {
   isAuthenticated: boolean;
-  login: (role: UserRole) => void;
+  user: AppUser | null;
+  login: (userId: string, role: UserRole) => void;
   logout: () => void;
-  medications: Medication[];
+  
+  // Patient-specific state
+  patientData: Patient | null,
   addMedication: (medication: Omit<Medication, "id" | "doses">) => void;
   updateDoseStatus: (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => void;
   deleteMedication: (medicationId: string) => void;
-  contacts: EmergencyContact[];
   addContact: (contact: EmergencyContact) => void;
   removeContact: (contactId: string) => void;
-  role: UserRole;
-  setRole: (role: UserRole) => void;
+  linkCaretakerToPatient: (patientCode: string) => boolean;
 }
 
 // Create the context
@@ -73,109 +75,133 @@ export const useSharedState = () => {
 };
 
 
-const initialMedications: Medication[] = [
-  {
-    id: "1",
-    name: "Metformin",
-    dosage: "500mg",
-    frequency: "Twice a day",
-    startDate: subDays(new Date(), 35).toISOString(),
-    timings: ["08:00", "20:00"],
-    doses: [
-      { scheduled: "08:00", status: "pending" },
-      { scheduled: "20:00", status: "pending" },
-    ],
-  },
-  {
-    id: "2",
-    name: "Lisinopril",
-    dosage: "10mg",
-    frequency: "Once a day",
-    startDate: subDays(new Date(), 10).toISOString(),
-    timings: ["09:00"],
-    doses: [{ scheduled: "09:00", status: "taken" }],
-  },
-  {
-    id: "3",
-    name: "Atorvastatin",
-    dosage: "20mg",
-    frequency: "Once a day",
-    startDate: new Date().toISOString(),
-    timings: ["21:00"],
-    doses: [{ scheduled: "21:00", status: "skipped" }],
-  },
-];
-
-
 // Create the provider component
 export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [medications, setMedications] = useState<Medication[]>(initialMedications);
-  const [contacts, setContacts] = useState<EmergencyContact[]>([]);
-  const [role, setRole] = useState<UserRole>('patient');
+  const [user, setUser] = useState<AppUser | null>(null);
+  const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
+  const [patientData, setPatientData] = useState<Patient | null>(null);
 
-  const login = (selectedRole: UserRole) => {
-    setRole(selectedRole);
-    setIsAuthenticated(true);
+  useEffect(() => {
+    if (user?.role === 'patient') {
+      const currentPatient = allPatients.find(p => p.id === user.id);
+      setPatientData(currentPatient || null);
+    } else if (user?.role === 'caretaker') {
+       const linkedPatient = allPatients.find(p => p.id === user.patientId);
+       setPatientData(linkedPatient || null);
+    } else {
+      setPatientData(null);
+    }
+  }, [user, allPatients]);
+
+
+  const login = (userId: string) => {
+    const selectedUser = MOCK_USERS.find(u => u.id === userId);
+    if (selectedUser) {
+      setUser(selectedUser);
+      setIsAuthenticated(true);
+    }
   };
 
   const logout = () => {
     setIsAuthenticated(false);
-    // Optionally reset role to default
-    setRole('patient');
+    setUser(null);
   };
-
+  
+  const updatePatientData = (updatedPatient: Patient) => {
+    setAllPatients(prev => prev.map(p => p.id === updatedPatient.id ? updatedPatient : p));
+  };
+  
   const addMedication = (medication: Omit<Medication, "id" | "doses">) => {
+    if (!patientData) return;
     const newMedication: Medication = {
       ...medication,
       id: new Date().toISOString(),
       doses: medication.timings.map(t => ({ scheduled: t, status: 'pending' })),
     };
-    setMedications(prev => [...prev, newMedication]);
+    const updatedPatient = {
+      ...patientData,
+      medications: [...patientData.medications, newMedication]
+    };
+    updatePatientData(updatedPatient);
   };
   
   const updateDoseStatus = (medicationId: string, scheduledTime: string, status: 'taken' | 'skipped') => {
-    setMedications(prevMeds => prevMeds.map(med => {
-      if (med.id === medicationId) {
-        return {
-          ...med,
-          doses: med.doses.map(dose => 
-            dose.scheduled === scheduledTime ? { ...dose, status } : dose
-          )
-        };
-      }
-      return med;
-    }));
+    if (!patientData) return;
+    const updatedPatient = {
+      ...patientData,
+      medications: patientData.medications.map(med => {
+        if (med.id === medicationId) {
+          return {
+            ...med,
+            doses: med.doses.map(dose => 
+              dose.scheduled === scheduledTime ? { ...dose, status } : dose
+            )
+          };
+        }
+        return med;
+      })
+    };
+     updatePatientData(updatedPatient);
   };
 
   const deleteMedication = (medicationId: string) => {
-    setMedications(prev => prev.filter(med => med.id !== medicationId));
+     if (!patientData) return;
+     const updatedPatient = {
+       ...patientData,
+       medications: patientData.medications.filter(med => med.id !== medicationId)
+     };
+     updatePatientData(updatedPatient);
   };
   
   const addContact = (contact: EmergencyContact) => {
-     if (!contacts.find(c => c.id === contact.id)) {
-        setContacts(prev => [...prev, contact]);
-     }
+     if (!patientData || patientData.emergencyContacts.find(c => c.id === contact.id)) return;
+     const updatedPatient = {
+       ...patientData,
+       emergencyContacts: [...patientData.emergencyContacts, contact]
+     };
+     updatePatientData(updatedPatient);
   }
 
   const removeContact = (contactId: string) => {
-    setContacts(prev => prev.filter(c => c.id !== contactId));
+     if (!patientData) return;
+      const updatedPatient = {
+       ...patientData,
+       emergencyContacts: patientData.emergencyContacts.filter(c => c.id !== contactId)
+     };
+     updatePatientData(updatedPatient);
   };
+  
+  const linkCaretakerToPatient = useCallback((patientCode: string): boolean => {
+    const patientToLink = allPatients.find(p => p.patientCode === patientCode);
+    if (patientToLink && user?.role === 'caretaker') {
+      // Link patient to caretaker
+      const updatedCaretaker = { ...user, patientId: patientToLink.id };
+      setUser(updatedCaretaker as AppUser);
+      
+      // Link caretaker to patient
+      const updatedPatient = { ...patientToLink, caretakerId: user.id };
+      updatePatientData(updatedPatient);
+
+      setPatientData(updatedPatient);
+      return true;
+    }
+    return false;
+  }, [user, allPatients]);
 
 
-  const value = {
+  const value: SharedState = {
     isAuthenticated,
+    user,
     login,
     logout,
-    medications,
+    patientData,
     addMedication,
     updateDoseStatus,
     deleteMedication,
-    contacts,
     addContact,
     removeContact,
-    role,
-    setRole
+    linkCaretakerToPatient,
   };
 
   return (
@@ -188,9 +214,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { role, isAuthenticated, logout } = useSharedState();
+  const { user, isAuthenticated, logout, patientData } = useSharedState();
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
      return <>{children}</>;
   }
 
@@ -198,15 +224,18 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       patient: patientMenuItems,
       doctor: doctorMenuItems,
       caretaker: caretakerMenuItems
-  }[role];
+  }[user.role];
 
-  const userDetails = {
-    patient: { name: 'John Doe', email: 'user@pocketdoc.com', avatar: 'https://placehold.co/40x40.png', fallback: 'JD' },
-    doctor: { name: 'Dr. Smith', email: 'dr.smith@clinic.com', avatar: 'https://placehold.co/40x40.png', fallback: 'DS' },
-    caretaker: { name: 'Jane Doe', email: 'jane.d@family.com', avatar: 'https://placehold.co/40x40.png', fallback: 'JD' },
-  }[role];
+  let userDetails = user;
+  let viewDescription = `${user.role.charAt(0).toUpperCase() + user.role.slice(1)} View`;
+  if (user.role === 'caretaker' && patientData) {
+      userDetails = {
+          ...user,
+          name: `${user.name} (Caring for ${patientData.name})`,
+      };
+      viewDescription = `Monitoring: ${patientData.name}`;
+  }
 
-  const currentRoleName = role.charAt(0).toUpperCase() + role.slice(1);
 
   return (
     <SidebarProvider>
@@ -256,7 +285,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                       </Avatar>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{userDetails.name}</span>
-                        <span className="text-xs text-muted-foreground">{currentRoleName} View</span>
+                        <span className="text-xs text-muted-foreground">{viewDescription}</span>
                       </div>
                     </div>
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={logout}>

@@ -1,11 +1,12 @@
 
+
 "use client";
 
 import { useState } from "react";
 import type { EmergencyContact } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserPlus, Phone, User } from "lucide-react";
+import { UserPlus, Phone, User, LoaderCircle } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   Dialog,
@@ -27,9 +28,29 @@ const mockContacts: EmergencyContact[] = [
 
 
 export function EmergencyContacts() {
-    const { contacts, addContact, removeContact } = useSharedState();
+    const { patientData, addContact, removeContact } = useSharedState();
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { toast } = useToast();
+    
+    if (!patientData) {
+        return (
+             <Card>
+                <CardHeader>
+                    <CardTitle>Emergency Contacts</CardTitle>
+                    <CardDescription>
+                        These contacts can be used to share your adherence reports.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="text-center text-muted-foreground py-10">
+                        <LoaderCircle className="mx-auto h-12 w-12 animate-spin" />
+                    </div>
+                </CardContent>
+             </Card>
+        )
+    }
+
+    const contacts = patientData.emergencyContacts;
 
     const handleAddContact = (contact: EmergencyContact) => {
         addContact(contact);
