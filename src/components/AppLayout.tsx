@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, HeartPulse, CalendarClock, Pill, MessageSquare, Video, CreditCard, Clipboard, 
   BookUser, Settings, LogOut, Stethoscope, Users, Notebook, FolderKanban, BarChart2, Bell,
-  ShieldQuestion, UserCog
+  ShieldQuestion, UserCog, User
 } from "lucide-react";
 import {
   SidebarProvider,
@@ -250,14 +250,18 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, isAuthenticated, logout, patientData } = useSharedState();
+  const router = useRouter();
 
   useEffect(() => {
     if (user === null && pathname !== '/login') {
-      logout();
+      router.replace('/login');
     }
-  }, [user, pathname, logout]);
+  }, [user, pathname, router]);
 
   if (!isAuthenticated && pathname !== '/login') {
+     useEffect(() => {
+      router.replace('/login');
+    }, [router]);
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -363,3 +367,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
