@@ -16,7 +16,6 @@ import {
   HeartPulse,
   Pill,
   BarChart,
-  User,
   Settings,
   LogOut,
   Stethoscope,
@@ -32,6 +31,11 @@ import {
   Scan,
   Bot,
   UserPlus,
+  User,
+  MessageSquare,
+  CreditCard,
+  ClipboardList,
+  CalendarClock,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -86,12 +90,12 @@ const doctorMenuItems = [
 
 // CARETAKER
 const caretakerMenuItems = [
-  { href: '/', label: 'Dashboard', icon: Home },
-  { href: '/guide', label: 'Taskboard', icon: FileText },
-  { href: '/appointments', label: 'Proxy Scheduling', icon: Notebook },
-  { href: '/reports', label: 'Document Vault', icon: FolderKanban },
-  { href: '/scanner', label: 'Observation Logs', icon: Notebook },
-  { href: '/settings', label: 'Permission Manager', icon: UserCog },
+  { href: '/', label: 'Taskboard', icon: Home },
+  { href: '/guide', label: 'Proxy Scheduling', icon: FileText },
+  { href: '/appointments', label: 'Document Vault', icon: Notebook },
+  { href: '/reports', label: 'Observation Logs', icon: FolderKanban },
+  { href: '/scanner', label: 'Permission Manager', icon: Notebook },
+  { href: '/settings', label: 'Profile', icon: UserCog },
   { href: '/profile', label: 'Profile', icon: User },
 ];
 
@@ -392,17 +396,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, pathname, router]);
 
+  // Conditional returns must happen AFTER all hooks are called.
+  if (pathname === '/login') {
+    return <>{children}</>;
+  }
 
-  if (!isAuthenticated && pathname !== '/login') {
+  if (!isAuthenticated) {
     return (
         <div className="flex h-screen w-full items-center justify-center">
             <LoaderCircle className="h-8 w-8 animate-spin" />
         </div>
     );
-  }
-
-  if (pathname === '/login') {
-      return <>{children}</>;
   }
 
   if (!user) {
@@ -519,3 +523,5 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
