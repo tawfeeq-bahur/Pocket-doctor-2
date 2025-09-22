@@ -58,7 +58,7 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
       name: "",
       email: "",
       appointmentDate: format(addDays(new Date(), 14), 'yyyy-MM-dd'),
-      caretakerId: "",
+      caretakerId: "none",
     },
   });
 
@@ -79,7 +79,7 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
         appointments: {
             next: values.appointmentDate
         },
-        caretakerId: values.caretakerId,
+        caretakerId: values.caretakerId === 'none' ? undefined : values.caretakerId,
     });
 
     toast({
@@ -155,7 +155,7 @@ export function AddPatientDialog({ children, onAddPatient }: AddPatientDialogPro
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {availableCaretakers.map(caretaker => (
                                 <SelectItem key={caretaker.id} value={caretaker.id}>{caretaker.name}</SelectItem>
                             ))}
