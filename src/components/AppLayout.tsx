@@ -63,6 +63,9 @@ import { Separator } from './ui/separator';
 import { MOCK_USERS, MOCK_PATIENTS } from '@/lib/mock-data';
 import { LoaderCircle } from 'lucide-react';
 import LoginPage from '@/app/login/page';
+import PatientDashboard from './dashboards/PatientDashboard';
+import DoctorDashboard from './dashboards/DoctorDashboard';
+import CaretakerDashboard from './dashboards/CaretakerDashboard';
 
 // PATIENT
 const patientMenuItems = [
@@ -387,7 +390,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
         {!isAuthenticated ? (
             <LoginPage allUsers={allUsers} onLogin={login} />
         ) : (
-            <AppLayout>{children}</AppLayout>
+            <AppLayout>
+              {children}
+            </AppLayout>
         )}
     </SharedStateContext.Provider>
   );

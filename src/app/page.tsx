@@ -8,6 +8,8 @@ import { differenceInDays } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarClock, Pill } from "lucide-react";
 import { LoaderCircle } from 'lucide-react';
+import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
+import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
 
 
 export default function Home() {
@@ -88,4 +90,3 @@ export default function Home() {
 
   return <div className="p-4">Unknown user role.</div>;
 }
-
