@@ -12,7 +12,7 @@ import type { UserRole, AppUser } from '@/lib/types';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
 type LoginPageProps = {
-    allUsers: AppUser[];
+    allUsers?: AppUser[];
     onLogin: (userId: string) => void;
 };
 

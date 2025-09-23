@@ -32,6 +32,7 @@ import {
   User,
   CalendarClock,
   LoaderCircle,
+  LogOut,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -131,7 +132,6 @@ interface SharedState {
       | 'medications'
       | 'emergencyContacts'
       | 'medicalHistory'
-      | 'avatar'
       | 'caretakerId'
     > & { caretakerId?: string }
   ) => void;
@@ -153,14 +153,6 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [allUsers, setAllUsers] = useState<AppUser[]>(MOCK_USERS);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
-
-  useEffect(() => {
-    // Default to the first patient on load
-    const defaultUser = allUsers.find(u => u.id === 'user-patient-1');
-    if(defaultUser) {
-      setUser(defaultUser);
-    }
-  }, []); // Runs only once on initial mount
 
   useEffect(() => {
     if (user?.role === 'patient') {
@@ -308,7 +300,6 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       | 'medications'
       | 'emergencyContacts'
       | 'medicalHistory'
-      | 'avatar'
       | 'caretakerId'
     > & { caretakerId?: string }
   ) => {
@@ -326,13 +317,13 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       role: 'patient',
       fallback,
       patientCode,
+      avatar: '',
       medications: [],
       emergencyContacts: [],
       medicalHistory: {
         allergies: 'None',
         chronicConditions: 'None',
       },
-      avatar: '',
       caretakerId: patientInfo.caretakerId || undefined,
     };
 
@@ -373,9 +364,11 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, patientData, allUsers, switchUser } = useSharedState();
+  const { user, patientData, switchUser } = useSharedState();
 
   if (!user) {
+    // This should ideally not be reached if AppInitializer is working,
+    // but it's a good fallback.
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />
@@ -396,6 +389,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
       name: `${user.name} (Caring for ${patientData.name})`,
     };
     viewDescription = `Monitoring: ${patientData.name}`;
+  }
+
+  const handleLogout = () => {
+    switchUser(null);
   }
 
   return (
@@ -461,6 +458,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </span>
                 </div>
               </div>
+               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+               </Button>
             </div>
           </SidebarFooter>
         </Sidebar>
