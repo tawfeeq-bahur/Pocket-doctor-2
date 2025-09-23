@@ -8,6 +8,7 @@ import React, {
   ReactNode,
   useEffect,
   useCallback,
+  Suspense,
 } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
@@ -63,9 +64,6 @@ import { Separator } from './ui/separator';
 import { MOCK_USERS, MOCK_PATIENTS } from '@/lib/mock-data';
 import { LoaderCircle } from 'lucide-react';
 import LoginPage from '@/app/login/page';
-import PatientDashboard from './dashboards/PatientDashboard';
-import DoctorDashboard from './dashboards/DoctorDashboard';
-import CaretakerDashboard from './dashboards/CaretakerDashboard';
 
 // PATIENT
 const patientMenuItems = [
@@ -377,23 +375,40 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     addPatient,
   };
 
+  const pathname = usePathname();
+
+  // If loading user state, show a global loader
   if (user === undefined) {
-     return (
-        <div className="flex h-screen w-full items-center justify-center">
-            <LoaderCircle className="h-8 w-8 animate-spin" />
-        </div>
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
     );
   }
 
+  // If not authenticated and not on the login page, render the login page.
+  // The login page itself is passed as a child for other routes.
+  if (!isAuthenticated && pathname !== '/login') {
+    return (
+      <SharedStateContext.Provider value={value}>
+        <LoginPage allUsers={allUsers} onLogin={login} />
+      </SharedStateContext.Provider>
+    );
+  }
+  
+  // If not authenticated and on the login page, just render the login page.
+  if (!isAuthenticated && pathname === '/login') {
+    return (
+       <SharedStateContext.Provider value={value}>
+        {children}
+      </SharedStateContext.Provider>
+    )
+  }
+
+  // If authenticated, render the main app layout
   return (
     <SharedStateContext.Provider value={value}>
-        {!isAuthenticated ? (
-            <LoginPage allUsers={allUsers} onLogin={login} />
-        ) : (
-            <AppLayout>
-              {children}
-            </AppLayout>
-        )}
+      <AppLayout>{children}</AppLayout>
     </SharedStateContext.Provider>
   );
 };
@@ -403,6 +418,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, logout, patientData } = useSharedState();
 
   if (!user) {
+    // This should theoretically not be reached if the provider logic is correct,
+    // but it's a good fallback.
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <LoaderCircle className="h-8 w-8 animate-spin" />

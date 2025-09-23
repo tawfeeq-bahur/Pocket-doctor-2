@@ -31,11 +31,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Suspense>
-            <SharedStateProvider>
-              {children}
-            </SharedStateProvider>
-          </Suspense>
+          <SharedStateProvider>
+            <Suspense>{children}</Suspense>
+          </SharedStateProvider>
           <Toaster />
         </ThemeProvider>
       </body>
