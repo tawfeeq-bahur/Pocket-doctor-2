@@ -167,7 +167,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     if (user?.role === 'patient') {
       const currentPatient = allPatients.find((p) => p.id === user.id);
       setPatientData(currentPatient || null);
-    } else if (user?.role === 'caretaker') {
+    } else if (user?.role === 'caretaker' && user.patientId) {
       const linkedPatient = allPatients.find((p) => p.id === user.patientId);
       setPatientData(linkedPatient || null);
     } else {
@@ -290,9 +290,9 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       );
 
       if (patientToLink && user?.role === 'caretaker') {
-        const updatedCaretaker = { ...user, patientId: patientToLink.id };
-        setUser(updatedCaretaker as AppUser);
-        updateCaretakerData(updatedCaretaker as Caretaker);
+        const updatedCaretaker = { ...user, patientId: patientToLink.id } as Caretaker;
+        setUser(updatedCaretaker);
+        updateCaretakerData(updatedCaretaker);
 
         const updatedPatient = { ...patientToLink, caretakerId: user.id };
         updatePatientData(updatedPatient);
@@ -384,8 +384,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout, patientData } = useSharedState();
 
-  // AppLayout should only render if a user is authenticated.
   if (!user) {
+    // This should ideally not happen if AppLayout is used correctly within an authenticated context.
     return null; 
   }
 
