@@ -17,7 +17,6 @@ import {
   Pill,
   BarChart,
   Settings,
-  LogOut,
   Stethoscope,
   Users,
   Notebook,
@@ -31,10 +30,8 @@ import {
   Scan,
   Bot,
   User,
-  MessageSquare,
-  CreditCard,
-  ClipboardList,
   CalendarClock,
+  LoaderCircle,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -110,11 +107,7 @@ const getMenuItems = (role: UserRole) => {
 };
 
 interface SharedState {
-  isAuthenticated: boolean;
   user?: AppUser | null;
-  login: (userId: string) => void;
-  logout: () => void;
-
   allUsers: AppUser[];
   allPatients: Patient[];
   patientData: Patient | null;
@@ -142,6 +135,7 @@ interface SharedState {
       | 'caretakerId'
     > & { caretakerId?: string }
   ) => void;
+  switchUser: (userId: string | null) => void;
 }
 
 const SharedStateContext = createContext<SharedState | undefined>(undefined);
@@ -159,9 +153,14 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [allUsers, setAllUsers] = useState<AppUser[]>(MOCK_USERS);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
-  
-  const isAuthenticated = user !== null && user !== undefined;
-  const router = useRouter();
+
+  useEffect(() => {
+    // Default to the first patient on load
+    const defaultUser = allUsers.find(u => u.id === 'user-patient-1');
+    if(defaultUser) {
+      setUser(defaultUser);
+    }
+  }, []); // Runs only once on initial mount
 
   useEffect(() => {
     if (user?.role === 'patient') {
@@ -175,22 +174,16 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user, allPatients]);
 
-  const login = (userId: string) => {
+  const switchUser = (userId: string | null) => {
+    if (userId === null) {
+      setUser(null);
+      setPatientData(null);
+      return;
+    }
     const selectedUser = allUsers.find((u) => u.id === userId);
     if (selectedUser) {
       setUser(selectedUser);
-      if (selectedUser.role === 'doctor') {
-        router.push('/doctor/dashboard');
-      } else {
-        router.push('/');
-      }
     }
-  };
-
-  const logout = () => {
-    setUser(null);
-    setPatientData(null);
-    router.push('/login');
   };
 
   const updatePatientData = (updatedPatient: Patient) => {
@@ -356,10 +349,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const value: SharedState = {
-    isAuthenticated,
     user,
-    login,
-    logout,
     allUsers,
     allPatients,
     patientData,
@@ -370,6 +360,7 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     removeContact,
     linkCaretakerToPatient,
     addPatient,
+    switchUser,
   };
 
   return (
@@ -382,11 +373,14 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout, patientData } = useSharedState();
+  const { user, patientData, allUsers, switchUser } = useSharedState();
 
   if (!user) {
-    // This should ideally not happen if AppLayout is used correctly within an authenticated context.
-    return null; 
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
   }
 
   const menuItems = getMenuItems(user.role);
@@ -467,15 +461,6 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   </span>
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={logout}
-              >
-                <LogOut className="h-4 w-4" />
-                <span className="sr-only">Logout</span>
-              </Button>
             </div>
           </SidebarFooter>
         </Sidebar>
