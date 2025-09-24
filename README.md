@@ -27,6 +27,28 @@ Pocket Doctor is a modern, AI-enhanced web application designed to help users ma
     *   **Icons:** Lucide React
     *   **Charts:** Recharts
 
+## Development
+
+1. Install deps: `npm install`
+2. Run dev: `npm run dev`
+
+### MongoDB setup
+
+Create a `.env.local` in the project root with:
+
+```
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=pocket_doctor
+```
+
+Then seed the database (with dev server running):
+
+```
+GET http://localhost:9002/api/seed
+```
+
+The app loads users and patients from the API (`/api/users`, `/api/patients`).
+
 ## UI/UX Focus
 
 *   **Clean and Modern:** The UI is designed to be minimal and clutter-free, using a professional color palette and ample white space.

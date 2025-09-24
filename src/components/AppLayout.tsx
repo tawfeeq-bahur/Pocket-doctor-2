@@ -132,6 +132,7 @@ interface SharedState {
       | 'medications'
       | 'emergencyContacts'
       | 'medicalHistory'
+      | 'avatar'
       | 'caretakerId'
     > & { caretakerId?: string }
   ) => void;
@@ -153,6 +154,32 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
   const [allUsers, setAllUsers] = useState<AppUser[]>(MOCK_USERS);
   const [allPatients, setAllPatients] = useState<Patient[]>(MOCK_PATIENTS);
   const [patientData, setPatientData] = useState<Patient | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load data from API (server) on component mount
+  useEffect(() => {
+    const loadDataFromAPI = async () => {
+      try {
+        const [patientsRes, usersRes] = await Promise.all([
+          fetch('/api/patients', { cache: 'no-store' }),
+          fetch('/api/users', { cache: 'no-store' }),
+        ]);
+        const [patients, users] = await Promise.all([
+          patientsRes.json(),
+          usersRes.json(),
+        ]);
+
+        setAllUsers(users as AppUser[]);
+        setAllPatients(patients as Patient[]);
+      } catch (error) {
+        // If API fails, fallback to mock data already set in state
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadDataFromAPI();
+  }, []);
 
   useEffect(() => {
     if (user?.role === 'patient') {
@@ -300,43 +327,60 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
       | 'medications'
       | 'emergencyContacts'
       | 'medicalHistory'
+      | 'avatar'
       | 'caretakerId'
     > & { caretakerId?: string }
   ) => {
-    const newId = `user-patient-${Date.now()}`;
-    const nameParts = patientInfo.name.split(' ');
-    const fallback = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
-    const patientCode = `${fallback.toUpperCase()}-${Math.random()
-      .toString(36)
-      .substring(2, 8)
-      .toUpperCase()}`;
+    // Persist to server, then re-sync lists to reflect across sessions/refreshes
+    const persist = async () => {
+      try {
+        const res = await fetch('/api/patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patientInfo),
+        });
+        if (!res.ok) throw new Error('Failed to create patient');
+        // Re-fetch server truth
+        const [patientsRes, usersRes] = await Promise.all([
+          fetch('/api/patients', { cache: 'no-store' }),
+          fetch('/api/users', { cache: 'no-store' }),
+        ]);
+        const [patients, users] = await Promise.all([
+          patientsRes.json(),
+          usersRes.json(),
+        ]);
+        setAllUsers(users as AppUser[]);
+        setAllPatients(patients as Patient[]);
+      } catch (e) {
+        // Fallback optimistic update if server fails
+        const newId = `user-patient-${Date.now()}`;
+        const nameParts = patientInfo.name.split(' ');
+        const fallback = (nameParts[0]?.[0] || '') + (nameParts[1]?.[0] || '');
+        const patientCode = `${fallback.toUpperCase()}-${Math.random()
+          .toString(36)
+          .substring(2, 8)
+          .toUpperCase()}`;
 
-    const newPatient: Patient = {
-      ...patientInfo,
-      id: newId,
-      role: 'patient',
-      fallback,
-      patientCode,
-      avatar: '',
-      medications: [],
-      emergencyContacts: [],
-      medicalHistory: {
-        allergies: 'None',
-        chronicConditions: 'None',
-      },
-      caretakerId: patientInfo.caretakerId || undefined,
-    };
-
-    setAllPatients((prev) => [...prev, newPatient]);
-    setAllUsers((prev) => [...prev, newPatient]);
-    
-    if (patientInfo.caretakerId) {
-      const caretaker = allUsers.find(u => u.id === patientInfo.caretakerId) as Caretaker;
-      if (caretaker) {
-        const updatedCaretaker = { ...caretaker, patientId: newId };
-        updateCaretakerData(updatedCaretaker);
+        const newPatient: Patient = {
+          ...patientInfo,
+          id: newId,
+          role: 'patient',
+          fallback,
+          patientCode,
+          avatar: '',
+          medications: [],
+          emergencyContacts: [],
+          medicalHistory: {
+            allergies: 'None',
+            chronicConditions: 'None',
+          },
+          caretakerId: patientInfo.caretakerId || undefined,
+        };
+        setAllPatients((prev) => [...prev, newPatient]);
+        setAllUsers((prev) => [...prev, newPatient]);
       }
-    }
+    };
+    void persist();
   };
 
   const value: SharedState = {
@@ -353,6 +397,14 @@ export const SharedStateProvider = ({ children }: { children: ReactNode }) => {
     addPatient,
     switchUser,
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <LoaderCircle className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <SharedStateContext.Provider value={value}>

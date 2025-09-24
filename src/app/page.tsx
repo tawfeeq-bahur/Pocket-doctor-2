@@ -10,6 +10,7 @@ import { CalendarClock, Pill } from "lucide-react";
 import { LoaderCircle } from 'lucide-react';
 import DoctorDashboard from "@/components/dashboards/DoctorDashboard";
 import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
+import { DatabaseViewer } from "@/components/DatabaseViewer";
 
 
 export default function Home() {
@@ -30,11 +31,21 @@ export default function Home() {
   }
 
   if (user.role === 'doctor') {
-      return <DoctorDashboard />;
+      return (
+        <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+          <DoctorDashboard />
+          <DatabaseViewer userRole={user.role} userId={user.id} />
+        </div>
+      );
   }
   
   if (user.role === 'caretaker') {
-      return <CaretakerDashboard />;
+      return (
+        <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
+          <CaretakerDashboard />
+          <DatabaseViewer userRole={user.role} userId={user.id} />
+        </div>
+      );
   }
 
   if (user.role === 'patient') {
@@ -84,6 +95,7 @@ export default function Home() {
                 </Card>
              </div>
             <PatientDashboard />
+            <DatabaseViewer userRole={user.role} userId={user.id} />
         </div>
     );
   }

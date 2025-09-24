@@ -1,16 +1,46 @@
 
-'use client';
+"use client";
 
-import { CalendarClock, Users, BarChart2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CalendarClock, Users, BarChart2, LoaderCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { MOCK_PATIENTS } from "@/lib/mock-data";
 import Link from 'next/link';
 import { Button } from "../ui/button";
 
+type Patient = {
+  id: string;
+  name: string;
+  appointments?: { next?: string };
+};
+
 export default function DoctorDashboard() {
-    const totalPatients = MOCK_PATIENTS.length;
-    const adherenceRate = 82; 
-    const upcomingAppointments = 4;
+    const [patients, setPatients] = useState<Patient[] | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+      const load = async () => {
+        try {
+          const res = await fetch('/api/patients', { cache: 'no-store' });
+          const data = await res.json();
+          setPatients(data);
+        } finally {
+          setLoading(false);
+        }
+      };
+      load();
+    }, []);
+
+    if (loading || !patients) {
+      return (
+        <div className="flex h-full w-full items-center justify-center">
+          <LoaderCircle className="h-8 w-8 animate-spin" />
+        </div>
+      );
+    }
+
+    const totalPatients = patients.length;
+    const adherenceRate = 82; // placeholder static metric
+    const upcomingAppointments = patients.filter(p => !!p.appointments?.next).length;
 
     return (
         <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
